@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Anuncio — {{ curso.nombre }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-6">Nuevo Anuncio</h2>
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Título</label>
+                <input type="text" name="titulo" required placeholder="Ej: Cambio de fecha de examen"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Contenido</label>
+                <textarea name="contenido" rows="5" required
+                          class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Publicar Anuncio</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

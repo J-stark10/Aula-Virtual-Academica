@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Calificar Entrega - {{ entrega.tarea.titulo }}{% endblock %}
+{% block content %}
+{% set es_autoevaluacion = entrega.tarea.dimension == 'autoevaluacion' %}
+<div class="max-w-lg mx-auto">
+    <a href="{{ url_for('entrega.listar', tarea_id=entrega.tarea_id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a entregas</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">{% if es_autoevaluacion %}Calificar Autoevaluación{% else %}Calificar Entrega{% endif %}</h2>
+    <p class="text-sm text-gray-500 mb-6">{{ entrega.estudiante.nombre_completo }} &middot; {{ entrega.tarea.titulo }}</p>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-4 mb-4 text-sm">
+        <div class="flex gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                {{ entrega.tarea.trimestre }}° Trimestre
+            </span>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded {% if entrega.tarea.dimension == 'ser' %}bg-purple-500/20 text-purple-300 border-purple-500/30{% elif entrega.tarea.dimension == 'saber' %}bg-blue-500/20 text-blue-300 border-blue-500/30{% elif entrega.tarea.dimension == 'hacer' %}bg-green-500/20 text-green-300 border-green-500/30{% else %}bg-amber-500/20 text-amber-300 border-amber-500/30{% endif %}">
+                {{ DIMENSIONES[entrega.tarea.dimension].label }}: {{ DIMENSIONES[entrega.tarea.dimension].subtitle }}
+            </span>
+        </div>
+        <p class="text-gray-400">Puntaje máximo: <span class="text-white font-bold">{{ entrega.tarea.puntaje_maximo }}</span></p>
+    </div>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-4">
+        {% if es_autoevaluacion %}
+        <p class="text-sm text-gray-400 mb-2">Autoevaluación del estudiante:</p>
+        <p class="text-xl font-bold text-amber-400">
+            {{ "%.1f"|format(entrega.puntaje_autoevaluacion) if entrega.puntaje_autoevaluacion is not none else '—' }} / {{ entrega.tarea.puntaje_maximo }}
+        </p>
+        {% else %}
+        <p class="text-sm text-gray-400 mb-2">Archivo entregado:</p>
+        <a href="{{ url_for('entrega.descargar', ruta_relativa=entrega.archivo) }}"
+           class="text-brand-400 hover:text-brand-300 font-semibold">Descargar archivo de entrega</a>
+        {% endif %}
+        {% if entrega.comentario %}
+        <p class="text-sm text-gray-400 mt-3">Comentario del estudiante:</p>
+        <p class="text-gray-300 text-sm italic">"{{ entrega.comentario }}"</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">
+                    Nota (sobre {{ entrega.tarea.puntaje_maximo }})
+                </label>
+                <input type="number" name="nota" required min="0" max="{{ entrega.tarea.puntaje_maximo }}" step="0.1"
+                       value="{% if entrega.calificacion %}{{ entrega.calificacion.nota }}{% elif es_autoevaluacion and entrega.puntaje_autoevaluacion is not none %}{{ '%.1f'|format(entrega.puntaje_autoevaluacion) }}{% endif %}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Retroalimentación (opcional)</label>
+                <textarea name="retroalimentacion" rows="4" placeholder="Comentarios para el estudiante"
+                          class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">{{ entrega.calificacion.retroalimentacion if entrega.calificacion else "" }}</textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('entrega.listar', tarea_id=entrega.tarea_id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Guardar Calificación</button>
+            </div>
+        </form>
+    </div>
+
+    {% if entrega.calificacion and entrega.calificacion.historial %}
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-sm font-bold text-gray-300 mb-3">Historial de cambios</h3>
+        <div class="space-y-2">
+            {% for h in entrega.calificacion.historial %}
+            <div class="flex items-center justify-between text-sm bg-gray-900/40 rounded-lg px-4 py-2.5">
+                <div>
+                    <span class="text-gray-400">{{ h.nota_anterior }} → </span>
+                    <span class="text-white font-bold">{{ h.nota_nueva }}</span>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-500 text-xs">{{ h.fecha_cambio.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p class="text-gray-600 text-2xs">{{ h.docente.nombre_completo if h.docente else '' }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

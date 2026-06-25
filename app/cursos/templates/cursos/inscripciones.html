@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Estudiantes — {{ curso.nombre }}{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+        <h2 class="text-2xl font-extrabold text-white mt-2">Estudiantes inscritos en {{ curso.nombre }}</h2>
+    </div>
+
+    <!-- Código de acceso del curso -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-lg font-bold text-white mb-3">Código de acceso al curso</h3>
+        <p class="text-sm text-gray-500 mb-4">
+            Comparte este código con tus estudiantes para que se inscriban desde la opción "Unirse a un Curso".
+        </p>
+        <div class="bg-gray-900 rounded-lg border border-gray-700 p-4 text-center">
+            <span class="text-3xl font-extrabold tracking-[0.4em] text-brand-400 select-all">{{ curso.codigo }}</span>
+        </div>
+    </div>
+
+    <!-- Lista de inscritos -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+        <table class="w-full text-sm text-gray-300">
+            <thead class="bg-gray-900/50 text-brand-400 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-4 text-left font-bold">Nombre</th>
+                    <th class="px-6 py-4 text-left font-bold">Correo</th>
+                    <th class="px-6 py-4 text-center font-bold">Inscrito desde</th>
+                    <th class="px-6 py-4 text-center font-bold">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700/50">
+                {% for insc in curso.inscripciones %}
+                <tr class="hover:bg-gray-750/30 transition">
+                    <td class="px-6 py-4 whitespace-nowrap font-bold text-white">{{ insc.estudiante.nombre_completo }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-400">{{ insc.estudiante.email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">{{ insc.fecha_inscripcion.strftime('%d/%m/%Y') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <a href="{{ url_for('curso.eliminar_inscripcion', id=curso.id, inscripcion_id=insc.id) }}"
+                           onclick="return confirm('¿Remover a este estudiante del curso?');"
+                           class="text-red-400 hover:text-red-300 font-semibold">Remover</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">Aún no hay estudiantes inscritos en este curso.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

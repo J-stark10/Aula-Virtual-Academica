@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Editar Curso — Aula Virtual Académica{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <h2 class="text-2xl font-extrabold text-white mb-6">Editar Curso</h2>
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Nombre del curso</label>
+                <input type="text" name="nombre" required value="{{ item.nombre }}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Descripción</label>
+                <textarea name="descripcion" rows="3"
+                          class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">{{ item.descripcion or "" }}</textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Categoría</label>
+                <select name="categoria_id" required
+                        class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    {% for c in categorias %}
+                    <option value="{{ c.id }}" {% if c.id == item.categoria_id %}selected{% endif %}>{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="checkbox" name="activo" id="activo" {% if item.activo %}checked{% endif %}
+                       class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-brand-500 focus:ring-brand-500">
+                <label for="activo" class="text-sm text-gray-300">Curso activo</label>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('curso.listar') }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Autoevaluaciones — {{ curso.nombre }}{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+        <h2 class="text-2xl font-extrabold text-white mt-2">Autoevaluaciones — {{ trimestre }}° Trimestre</h2>
+        <p class="text-sm text-gray-500 mt-1">{{ curso.nombre }}</p>
+        <p class="text-sm text-gray-500">{{ respuestas|length }} respuesta(s) &middot; {{ pendientes|length }} pendiente(s)</p>
+    </div>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+        <table class="w-full text-sm text-gray-300">
+            <thead class="bg-gray-900/50 text-brand-400 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-4 text-left font-bold">Estudiante</th>
+                    <th class="px-6 py-4 text-center font-bold">Auto-puntaje</th>
+                    <th class="px-6 py-4 text-center font-bold">Nota final</th>
+                    <th class="px-6 py-4 text-center font-bold">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700/50">
+                {% for r in respuestas %}
+                <tr class="hover:bg-gray-750/30 transition">
+                    <td class="px-6 py-4 whitespace-nowrap font-bold text-white">{{ r.estudiante.nombre_completo }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-amber-400">
+                        {{ '%.1f'|format(r.puntaje) if r.puntaje is not none else '—' }}/5
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center font-bold {% if r.nota_final is not none %}text-emerald-400{% else %}text-gray-500{% endif %}">
+                        {{ '%.1f'|format(r.nota_final) if r.nota_final is not none else '—' }}/5
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold">
+                        <a href="{{ url_for('curso.calificar_autoevaluacion', respuesta_id=r.id) }}"
+                           class="text-gray-300 hover:text-white">
+                            {% if r.nota_final is not none %}Recalificar{% else %}Calificar{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">Aún no hay respuestas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pendientes %}
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-lg font-bold text-white mb-3">Estudiantes pendientes</h3>
+        <div class="flex flex-wrap gap-2">
+            {% for estudiante in pendientes %}
+            <span class="px-3 py-1.5 text-sm rounded-lg bg-gray-900/50 text-gray-300 border border-gray-700">{{ estudiante.nombre_completo }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

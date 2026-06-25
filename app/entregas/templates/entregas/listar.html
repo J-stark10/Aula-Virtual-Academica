@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Entregas — {{ tarea.titulo }}{% endblock %}
+{% block content %}
+{% set es_autoevaluacion = tarea.dimension == 'autoevaluacion' %}
+<div class="space-y-6">
+    <div>
+        <a href="{{ url_for('tarea.detalle', id=tarea.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a la tarea</a>
+        <h2 class="text-2xl font-extrabold text-white mt-2">{% if es_autoevaluacion %}Autoevaluaciones{% else %}Entregas{% endif %} de "{{ tarea.titulo }}"</h2>
+        <p class="text-sm text-gray-500 mt-1">
+            {{ tarea.trimestre }}° Trimestre &middot;
+            <span class="px-1.5 py-0.5 text-xs font-semibold rounded {% if tarea.dimension == 'ser' %}bg-purple-500/20 text-purple-300{% elif tarea.dimension == 'saber' %}bg-blue-500/20 text-blue-300{% elif tarea.dimension == 'hacer' %}bg-green-500/20 text-green-300{% else %}bg-amber-500/20 text-amber-300{% endif %}">
+                {{ tarea.dimension|capitalize }}
+            </span>
+        </p>
+        <p class="text-sm text-gray-500">{{ entregas|length }} entrega(s) &middot; {{ pendientes|length }} pendiente(s)</p>
+    </div>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+        <table class="w-full text-sm text-gray-300">
+            <thead class="bg-gray-900/50 text-brand-400 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-4 text-left font-bold">Estudiante</th>
+                    <th class="px-6 py-4 text-center font-bold">Fecha de entrega</th>
+                    <th class="px-6 py-4 text-center font-bold">Estado</th>
+                    {% if es_autoevaluacion %}
+                    <th class="px-6 py-4 text-center font-bold">Auto-puntaje</th>
+                    {% endif %}
+                    <th class="px-6 py-4 text-center font-bold">Nota</th>
+                    <th class="px-6 py-4 text-center font-bold">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700/50">
+                {% for e in entregas %}
+                <tr class="hover:bg-gray-750/30 transition">
+                    <td class="px-6 py-4 whitespace-nowrap font-bold text-white">{{ e.estudiante.nombre_completo }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-400">{{ e.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if e.estado == 'revisado' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">Revisado</span>
+                        {% else %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/35">Entregado</span>
+                        {% endif %}
+                    </td>
+                    {% if es_autoevaluacion %}
+                    <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-amber-400">
+                        {% if e.puntaje_autoevaluacion is not none %}{{ "%.1f"|format(e.puntaje_autoevaluacion) }}{% else %}—{% endif %}
+                    </td>
+                    {% endif %}
+                    <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-white">
+                        {% if e.calificacion %}{{ e.calificacion.nota }} / {{ tarea.puntaje_maximo }}{% else %}—{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold">
+                        {% if not es_autoevaluacion %}
+                        <a href="{{ url_for('entrega.descargar', ruta_relativa=e.archivo) }}" class="text-brand-400 hover:text-brand-300 mr-3">Descargar</a>
+                        {% endif %}
+                        <a href="{{ url_for('calificacion.calificar', entrega_id=e.id) }}" class="text-gray-300 hover:text-white mr-3">
+                            {% if e.calificacion %}Recalificar{% else %}Calificar{% endif %}
+                        </a>
+                        <a href="{{ url_for('entrega.eliminar', entrega_id=e.id) }}"
+                           onclick="return confirm('¿Eliminar la entrega de «{{ e.estudiante.nombre_completo }}»? También se borrará la calificación si existe.');"
+                           class="text-red-400 hover:text-red-300 transition">Eliminar</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{% if es_autoevaluacion %}6{% else %}5{% endif %}" class="px-6 py-8 text-center text-gray-500">Aún no hay entregas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pendientes %}
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-lg font-bold text-white mb-3">Estudiantes pendientes de entregar</h3>
+        <div class="flex flex-wrap gap-2">
+            {% for estudiante in pendientes %}
+            <span class="px-3 py-1.5 text-sm rounded-lg bg-gray-900/50 text-gray-300 border border-gray-700">{{ estudiante.nombre_completo }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

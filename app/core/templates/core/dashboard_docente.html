@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Docente{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <h2 class="text-2xl font-extrabold text-white">Mi Panel Docente</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Mis Cursos</p>
+            <p class="text-3xl font-extrabold text-white mt-1">{{ total_cursos }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Estudiantes Inscritos</p>
+            <p class="text-3xl font-extrabold text-emerald-400 mt-1">{{ total_estudiantes }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Tareas Publicadas</p>
+            <p class="text-3xl font-extrabold text-white mt-1">{{ total_tareas }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Entregas por Revisar</p>
+            <p class="text-3xl font-extrabold text-amber-400 mt-1">{{ entregas_sin_revisar }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Mis cursos</h3>
+                <a href="{{ url_for('curso.crear') }}" class="text-sm text-brand-400 hover:text-brand-300 font-semibold">+ Nuevo curso</a>
+            </div>
+            <div class="space-y-3">
+                {% for c in cursos %}
+                <a href="{{ url_for('curso.detalle', id=c.id) }}" class="block bg-gray-900/40 hover:bg-gray-900/70 rounded-lg p-3 transition">
+                    <p class="font-semibold text-gray-100">{{ c.nombre }}</p>
+                    <p class="text-xs text-gray-500">{{ c.categoria.nombre }} &middot; {{ c.inscripciones|length }} estudiante(s)</p>
+                </a>
+                {% else %}
+                <p class="text-gray-500 text-sm">Aún no has creado ningún curso.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+            <h3 class="text-lg font-bold text-white mb-4">Tareas próximas a vencer (7 días)</h3>
+            <div class="space-y-3">
+                {% for t in tareas_proximas %}
+                <div class="flex items-center justify-between text-sm border-b border-gray-700/50 py-2">
+                    <span class="text-gray-200 font-semibold">{{ t.titulo }}</span>
+                    <span class="text-amber-400 text-xs font-bold whitespace-nowrap">{{ t.fecha_limite.strftime('%d/%m %H:%M') }}</span>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-sm">No hay tareas próximas a vencer.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

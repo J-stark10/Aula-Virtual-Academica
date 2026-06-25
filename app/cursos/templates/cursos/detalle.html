@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}{{ curso.nombre }} — Aula Virtual Académica{% endblock %}
+{% block content %}
+{% set es_gestor = current_user.rol == 'admin' or (current_user.rol == 'docente' and curso.docente_id == current_user.id) %}
+<div class="space-y-6">
+    <!-- Encabezado del curso -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <div class="flex justify-between items-start flex-wrap gap-4">
+            <div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-md bg-gray-700 text-gray-300">{{ curso.categoria.nombre }}</span>
+                <h2 class="text-2xl font-extrabold text-white mt-2">{{ curso.nombre }}</h2>
+                <p class="text-gray-400 mt-1">{{ curso.descripcion or "Sin descripción" }}</p>
+                <p class="text-sm text-gray-500 mt-2">Docente: {{ curso.docente.nombre_completo }}</p>
+                {% if es_gestor %}
+                <div class="mt-3 inline-flex items-center gap-2 bg-gray-900/70 border border-gray-700 rounded-lg px-4 py-2">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Código:</span>
+                    <span class="text-xl font-extrabold tracking-[0.3em] text-brand-400 select-all">{{ curso.codigo }}</span>
+                    <button onclick="navigator.clipboard.writeText('{{ curso.codigo }}').then(() => { this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar', 1500); })"
+                            class="ml-2 text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-2.5 py-1 rounded transition">Copiar</button>
+                </div>
+                {% endif %}
+            </div>
+            {% if es_gestor %}
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url_for('calificacion.ver_notas_curso', curso_id=curso.id) }}"
+                   class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-lg text-sm transition shadow-lg shadow-emerald-500/10">Notas</a>
+                <a href="{{ url_for('curso.inscripciones', id=curso.id) }}"
+                   class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-3 py-2 rounded-lg text-sm transition">Estudiantes ({{ curso.inscripciones|length }})</a>
+                <a href="{{ url_for('anuncio.crear', curso_id=curso.id) }}"
+                   class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-3 py-2 rounded-lg text-sm transition">+ Anuncio</a>
+                <a href="{{ url_for('modulo.crear', curso_id=curso.id) }}"
+                   class="bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold px-3 py-2 rounded-lg text-sm transition shadow-lg shadow-brand-500/10">+ Módulo</a>
+            </div>
+            {% endif %}
+            {% if current_user.rol == 'estudiante' %}
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url_for('calificacion.mis_notas_curso', curso_id=curso.id) }}"
+                   class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-lg text-sm transition shadow-lg shadow-emerald-500/10">Mis Notas</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Autoevaluación -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-white">Autoevaluación</h3>
+            {% if es_gestor %}
+            <span class="text-xs text-gray-500">Activa la autoevaluación por trimestre</span>
+            {% endif %}
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {% for t in [1, 2, 3] %}
+            {% set ae = autoevaluaciones[t] %}
+            {% set activa = ae and ae.config.activo %}
+            <div class="bg-gray-900/40 rounded-lg p-4 text-center {% if activa %}border border-brand-500/30{% else %}border border-gray-700/50{% endif %}">
+                <p class="text-sm font-bold text-gray-300 mb-2">{{ t }}° Trimestre</p>
+                {% if activa %}
+                    <p class="text-xs text-emerald-400 font-semibold mb-2">Activa</p>
+                    {% if es_gestor %}
+                    <div class="flex flex-wrap gap-1 justify-center">
+                        <a href="{{ url_for('curso.ver_autoevaluaciones', curso_id=curso.id, trimestre=t) }}"
+                           class="inline-block bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded transition">
+                            Ver resultados
+                        </a>
+                        <form method="POST" action="{{ url_for('curso.desactivar_autoevaluacion', curso_id=curso.id) }}" class="inline">
+                            <input type="hidden" name="trimestre" value="{{ t }}">
+                            <button type="submit"
+                                    onclick="return confirm('¿Desactivar la autoevaluación del {{ t }}° Trimestre? Los estudiantes ya no podrán modificarla.');"
+                                    class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white text-xs font-semibold px-3 py-1.5 rounded border border-red-500/20 transition">
+                                Desactivar
+                            </button>
+                        </form>
+                    </div>
+                    {% elif current_user.rol == 'estudiante' %}
+                        {% set resp = ae.respuesta %}
+                        {% if resp and resp.puntaje is not none %}
+                        <p class="text-xs text-amber-400 font-semibold mb-2">Tu puntaje: {{ '%.1f'|format(resp.puntaje) }}/5</p>
+                        {% if resp.nota_final is not none %}
+                        <p class="text-xs text-emerald-400 font-semibold mb-2">Nota final: {{ '%.1f'|format(resp.nota_final) }}/5</p>
+                        {% endif %}
+                        {% endif %}
+                    <a href="{{ url_for('curso.autoevaluacion_form', curso_id=curso.id, trimestre=t) }}"
+                       class="inline-block bg-brand-500 hover:bg-brand-600 text-gray-900 text-xs font-bold px-3 py-1.5 rounded transition">
+                        {% if resp %}Actualizar{% else %}Autoevaluarse{% endif %}
+                    </a>
+                    {% endif %}
+                {% elif ae and not ae.config.activo %}
+                    <p class="text-xs text-gray-500 mb-1">Cerrada</p>
+                    {% if es_gestor %}
+                    <form method="POST" action="{{ url_for('curso.activar_autoevaluacion', curso_id=curso.id) }}" class="inline">
+                        <input type="hidden" name="trimestre" value="{{ t }}">
+                        <button type="submit"
+                                class="bg-gray-700 hover:bg-brand-500 hover:text-gray-900 text-gray-400 text-xs font-semibold px-3 py-1.5 rounded transition">
+                            Reactivar
+                        </button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                    {% if es_gestor %}
+                    <form method="POST" action="{{ url_for('curso.activar_autoevaluacion', curso_id=curso.id) }}" class="inline">
+                        <input type="hidden" name="trimestre" value="{{ t }}">
+                        <button type="submit"
+                                class="bg-gray-700 hover:bg-brand-500 hover:text-gray-900 text-gray-400 text-xs font-semibold px-3 py-1.5 rounded transition">
+                            Activar
+                        </button>
+                    </form>
+                    {% else %}
+                    <p class="text-xs text-gray-600">No activada</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Anuncios -->
+    {% if curso.anuncios %}
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-lg font-bold text-white mb-4">Anuncios</h3>
+        <div class="space-y-3">
+            {% for a in curso.anuncios|sort(attribute='fecha_publicacion', reverse=True) %}
+            <div class="bg-gray-900/40 rounded-lg p-4 flex justify-between items-start">
+                <div>
+                    <p class="font-semibold text-gray-100">{{ a.titulo }}</p>
+                    <p class="text-sm text-gray-400 mt-1">{{ a.contenido }}</p>
+                    <p class="text-xs text-gray-500 mt-2">{{ a.fecha_publicacion.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                {% if es_gestor %}
+                <a href="{{ url_for('anuncio.eliminar', id=a.id) }}"
+                   onclick="return confirm('¿Eliminar este anuncio?');"
+                   class="text-red-400 hover:text-red-300 text-xs font-semibold">Eliminar</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Módulos -->
+    <div class="space-y-4">
+        {% for modulo in curso.modulos %}
+        <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+            <div class="bg-gray-900/50 px-6 py-4 flex justify-between items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="font-bold text-white">{{ modulo.titulo }}</h3>
+                    {% if modulo.descripcion %}<p class="text-xs text-gray-500">{{ modulo.descripcion }}</p>{% endif %}
+                </div>
+                {% if es_gestor %}
+                <div class="flex gap-2 text-xs">
+                    <a href="{{ url_for('recurso.crear', modulo_id=modulo.id) }}" class="text-brand-400 hover:text-brand-300 font-semibold">+ Recurso</a>
+                    <a href="{{ url_for('tarea.crear', modulo_id=modulo.id) }}" class="text-brand-400 hover:text-brand-300 font-semibold">+ Tarea</a>
+                    <a href="{{ url_for('modulo.editar', id=modulo.id) }}" class="text-gray-400 hover:text-gray-200 font-semibold">Editar</a>
+                    <a href="{{ url_for('modulo.eliminar', id=modulo.id) }}"
+                       onclick="return confirm('¿Eliminar este módulo y todo su contenido?');"
+                       class="text-red-400 hover:text-red-300 font-semibold">Eliminar</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="p-6 space-y-3">
+                <!-- Recursos -->
+                {% for r in modulo.recursos %}
+                <div class="flex items-center justify-between bg-gray-900/30 rounded-lg px-4 py-3">
+                    <div class="flex items-center gap-3">
+                        <span class="p-1.5 rounded-md bg-brand-500/10 text-brand-400 text-xs font-bold uppercase">{{ r.tipo }}</span>
+                        <span class="text-gray-200 font-medium">{{ r.titulo }}</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        {% if r.tipo == 'enlace' %}
+                        <a href="{{ r.url_enlace }}" target="_blank" class="text-brand-400 hover:text-brand-300 font-semibold">Abrir enlace</a>
+                        {% elif r.tipo == 'pdf' and r.archivo_pdf %}
+                        <a href="{{ url_for('recurso.descargar', ruta_relativa=r.archivo_pdf) }}" class="text-brand-400 hover:text-brand-300 font-semibold">Descargar PDF</a>
+                        {% elif r.tipo == 'video' and r.archivo_video %}
+                        <a href="{{ url_for('recurso.descargar', ruta_relativa=r.archivo_video) }}" class="text-brand-400 hover:text-brand-300 font-semibold">Ver video</a>
+                        {% endif %}
+                        {% if es_gestor %}
+                        <a href="{{ url_for('recurso.editar', id=r.id) }}" class="text-gray-400 hover:text-gray-200">Editar</a>
+                        <a href="{{ url_for('recurso.eliminar', id=r.id) }}"
+                           onclick="return confirm('¿Eliminar este recurso?');"
+                           class="text-red-400 hover:text-red-300">Eliminar</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Tareas -->
+                {% for t in modulo.tareas %}
+                <a href="{{ url_for('tarea.detalle', id=t.id) }}"
+                   class="flex items-center justify-between bg-gray-900/30 hover:bg-gray-900/60 rounded-lg px-4 py-3 transition block">
+                    <div class="flex items-center gap-3">
+                        <span class="p-1.5 rounded-md bg-amber-500/10 text-amber-400 text-xs font-bold uppercase">Tarea</span>
+                        <span class="text-gray-200 font-medium">{{ t.titulo }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Vence: {{ t.fecha_limite.strftime('%d/%m/%Y %H:%M') }}</span>
+                </a>
+                {% endfor %}
+
+                {% if not modulo.recursos and not modulo.tareas %}
+                <p class="text-gray-500 text-sm text-center py-4">Este módulo aún no tiene contenido.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-12 text-center text-gray-500">
+            Este curso aún no tiene módulos.
+            {% if es_gestor %}
+            <a href="{{ url_for('modulo.crear', curso_id=curso.id) }}" class="text-brand-400 hover:text-brand-300 font-semibold block mt-2">Crea el primer módulo</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

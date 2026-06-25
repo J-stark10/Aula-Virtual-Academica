@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Entregar — {{ tarea.titulo }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <a href="{{ url_for('tarea.detalle', id=tarea.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a la tarea</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">
+        {% if entrega_existente %}Reenviar Entrega{% else %}Entregar Tarea{% endif %}
+    </h2>
+    <p class="text-sm text-gray-500 mb-6">{{ tarea.titulo }} &middot; Fecha límite: {{ tarea.fecha_limite.strftime('%d/%m/%Y %H:%M') }}</p>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        {% if entrega_existente %}
+        <div class="bg-gray-900/40 rounded-lg p-3 mb-4 text-sm text-gray-400">
+            Ya tienes una entrega registrada para esta tarea. Si subes un nuevo archivo, reemplazará la entrega anterior.
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Archivo de tu entrega</label>
+                <input type="file" name="archivo" {% if not entrega_existente %}required{% endif %}
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Comentario (opcional)</label>
+                <textarea name="comentario" rows="3" placeholder="Algún comentario para tu docente"
+                          class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">{{ entrega_existente.comentario if entrega_existente else "" }}</textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('tarea.detalle', id=tarea.id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">
+                    {% if entrega_existente %}Reenviar{% else %}Entregar{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

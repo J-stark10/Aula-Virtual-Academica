@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Nueva Tarea — {{ modulo.titulo }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <a href="{{ url_for('curso.detalle', id=modulo.curso_id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">Nueva Tarea</h2>
+    <p class="text-sm text-gray-500 mb-6">Módulo: {{ modulo.titulo }}</p>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-4 mb-6">
+        <h3 id="titulo-disponibles" class="text-sm font-bold text-gray-300 mb-3">Puntos disponibles por dimensión (Trimestre 1)</h3>
+        <div id="grid-disponibles" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {% for dim, info in disponibles_por_trimestre[1].items() if dim != 'autoevaluacion' %}
+            <div class="bg-gray-900/50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-400 font-medium">{{ info.label }}</p>
+                <p class="text-lg font-bold {% if info.usados >= info.max %}text-red-400{% else %}text-emerald-400{% endif %}">
+                    {{ info.max - info.usados }}/{{ info.max }}
+                </p>
+                <div class="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                    <div class="h-1.5 rounded-full {% if info.usados >= info.max %}bg-red-500{% else %}bg-brand-500{% endif %}" style="width: {{ (info.usados / info.max * 100) if info.max > 0 else 0 }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+    const disponiblesData = {{ disponibles_por_trimestre | tojson | safe }};
+    const dimKeys = {{ DIMENSIONES.keys() | list | tojson }};
+    function actualizarDisponibles(trimestre) {
+        const data = disponiblesData[trimestre];
+        document.getElementById('titulo-disponibles').textContent = 'Puntos disponibles por dimensión (Trimestre ' + trimestre + ')';
+        const grid = document.getElementById('grid-disponibles');
+        grid.innerHTML = '';
+        dimKeys.forEach(function(dim) {
+            if (dim === 'autoevaluacion') return;
+            const info = data[dim];
+            const usado = info.usados;
+            const max = info.max;
+            const disponibles = max - usado;
+            const pct = max > 0 ? (usado / max * 100) : 0;
+            const colorCls = usado >= max ? 'text-red-400' : 'text-emerald-400';
+            const barCls = usado >= max ? 'bg-red-500' : 'bg-brand-500';
+            grid.innerHTML +=
+                '<div class="bg-gray-900/50 rounded-lg p-3 text-center">' +
+                '<p class="text-xs text-gray-400 font-medium">' + info.label + '</p>' +
+                '<p class="text-lg font-bold ' + colorCls + '">' + disponibles + '/' + max + '</p>' +
+                '<div class="w-full bg-gray-700 rounded-full h-1.5 mt-1">' +
+                '<div class="h-1.5 rounded-full ' + barCls + '" style="width: ' + pct + '%"></div></div></div>';
+        });
+    }
+    </script>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Título de la tarea</label>
+                <input type="text" name="titulo" required placeholder="Ej: Tarea de ecuaciones lineales"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Instrucciones</label>
+                <textarea name="instrucciones" rows="4" placeholder="Describe lo que deben entregar los estudiantes"
+                          class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-1">Trimestre</label>
+                    <select name="trimestre" onchange="actualizarDisponibles(parseInt(this.value))"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="1">1er Trimestre</option>
+                        <option value="2">2do Trimestre</option>
+                        <option value="3">3er Trimestre</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-1">Dimensión de evaluación</label>
+                    <select name="dimension"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        {% for key, dim in DIMENSIONES.items() %}
+                        {% if key != 'autoevaluacion' %}
+                        <option value="{{ key }}">{{ dim.label }} — {{ dim.subtitle }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-1">Fecha límite</label>
+                    <input type="datetime-local" name="fecha_limite" required
+                           class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-1">Puntaje máximo</label>
+                    <input type="number" name="puntaje_maximo" value="10" min="0.5" step="0.5"
+                           class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('curso.detalle', id=modulo.curso_id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Publicar Tarea</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

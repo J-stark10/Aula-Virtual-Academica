@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Administrador{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <h2 class="text-2xl font-extrabold text-white">Panel Administrativo</h2>
+
+    <!-- Tarjetas de métricas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Usuarios</p>
+            <p class="text-3xl font-extrabold text-white mt-1">{{ total_usuarios }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Docentes</p>
+            <p class="text-3xl font-extrabold text-brand-400 mt-1">{{ total_docentes }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Estudiantes</p>
+            <p class="text-3xl font-extrabold text-emerald-400 mt-1">{{ total_estudiantes }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Cursos</p>
+            <p class="text-3xl font-extrabold text-white mt-1">{{ total_cursos }}</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-5">
+            <p class="text-xs text-gray-400 uppercase font-bold">Inscripciones</p>
+            <p class="text-3xl font-extrabold text-white mt-1">{{ total_inscripciones }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Gráfico de registros -->
+        <div class="lg:col-span-2 bg-gray-800 rounded-xl border border-gray-700 p-6">
+            <h3 class="text-lg font-bold text-white mb-4">Nuevos registros (últimos 7 días)</h3>
+            <canvas id="chartRegistros" height="110"></canvas>
+        </div>
+
+        <!-- Últimos cursos creados -->
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+            <h3 class="text-lg font-bold text-white mb-4">Cursos recientes</h3>
+            <div class="space-y-3">
+                {% for c in ultimos_cursos %}
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-200 font-semibold truncate">{{ c.nombre }}</span>
+                    <span class="text-gray-500 text-xs">{{ c.fecha_creacion.strftime('%d/%m/%Y') }}</span>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-sm">Aún no hay cursos registrados.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bitácora reciente -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <h3 class="text-lg font-bold text-white mb-4">Actividad reciente del sistema</h3>
+        <div class="space-y-2">
+            {% for log in recientes_logs %}
+            <div class="flex items-center justify-between text-sm border-b border-gray-700/50 py-2">
+                <div>
+                    <span class="text-brand-400 font-semibold">{{ log.accion }}</span>
+                    <span class="text-gray-400"> — {{ log.detalles }}</span>
+                </div>
+                <span class="text-gray-500 text-xs whitespace-nowrap ml-4">{{ log.fecha.strftime('%d/%m %H:%M') }}</span>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-sm">Sin actividad registrada todavía.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('chartRegistros');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                label: 'Nuevos usuarios',
+                data: {{ chart_data|tojson }},
+                borderColor: '#60a5fa',
+                backgroundColor: 'rgba(96, 165, 250, 0.15)',
+                tension: 0.3,
+                fill: true,
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: '#d1d5db' } } },
+            scales: {
+                x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' }, beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}

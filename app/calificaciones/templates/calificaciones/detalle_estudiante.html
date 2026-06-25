@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ estudiante.nombre_completo }} - {{ curso.nombre }}{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <a href="{{ url_for('calificacion.ver_notas_curso', curso_id=curso.id, trimestre=trimestre) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a notas del curso</a>
+        <h2 class="text-2xl font-extrabold text-white mt-2">{{ estudiante.nombre_completo }}</h2>
+        <p class="text-sm text-gray-500">{{ curso.nombre }} &middot; {{ trimestre }}° Trimestre</p>
+    </div>
+
+    {% for dim, info in resumen.items() %}
+    {% set pct = (info.nota / info.max * 100) if info.max > 0 else 0 %}
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+        <div class="bg-gray-900/50 px-6 py-4 flex justify-between items-center">
+            <div>
+                <h3 class="font-bold text-white">{{ info.label }}</h3>
+                <p class="text-xs text-gray-400">{{ info.subtitle }}</p>
+            </div>
+            <div class="text-right">
+                <span class="text-2xl font-extrabold {% if pct >= 80 %}text-emerald-400{% elif pct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
+                    {{ "%.1f"|format(info.nota) }}
+                </span>
+                <span class="text-gray-500 text-sm"> / {{ info.max }}</span>
+                <div class="w-32 ml-auto bg-gray-700 rounded-full h-2 mt-1">
+                    <div class="h-2 rounded-full {% if pct >= 80 %}bg-emerald-500{% elif pct >= 50 %}bg-amber-500{% else %}bg-red-500{% endif %}" style="width: {{ pct }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        {% if info.tareas %}
+        <div class="p-4 space-y-2">
+            {% for tc in info.tareas %}
+            <div class="flex items-center justify-between bg-gray-900/30 rounded-lg px-4 py-3">
+                <div>
+                    <p class="text-sm font-semibold text-gray-200">{% if tc.tarea %}{{ tc.tarea.titulo }}{% else %}Autoevaluación{% endif %}</p>
+                    {% if tc.autoevaluacion_puntaje is defined and tc.autoevaluacion_puntaje is not none %}
+                    <p class="text-xs text-amber-400">Auto-puntaje: {{ '%.1f'|format(tc.autoevaluacion_puntaje) }}/5</p>
+                    {% endif %}
+                    {% if tc.retroalimentacion %}
+                    <p class="text-xs text-gray-500 italic">"{{ tc.retroalimentacion }}"</p>
+                    {% endif %}
+                </div>
+                <div class="text-right">
+                    {% if tc.nota is not none %}
+                    {% set tpct = (tc.nota / tc.max * 100) if tc.max > 0 else 0 %}
+                    <span class="font-bold {% if tpct >= 80 %}text-emerald-400{% elif tpct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
+                        {{ "%.1f"|format(tc.nota) }}
+                    </span>
+                    <span class="text-gray-500 text-xs"> / {{ "%.0f"|format(tc.max) }}</span>
+                    {% elif tc.entregada %}
+                    <span class="text-amber-400 text-xs font-semibold">Pendiente de calificar</span>
+                    {% else %}
+                    <span class="text-gray-600 text-xs">No entregado</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-6 text-center text-gray-500 text-sm">No hay tareas en esta dimensión.</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

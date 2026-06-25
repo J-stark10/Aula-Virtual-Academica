@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Autoevaluación — {{ curso.nombre }}{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">Autoevaluación — {{ trimestre }}° Trimestre</h2>
+    <p class="text-sm text-gray-500 mb-6">{{ curso.nombre }}</p>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        {% if respuesta and respuesta.nota_final is not none %}
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mb-6 text-center">
+            <p class="text-sm text-emerald-400 font-semibold">Autoevaluación calificada por el docente</p>
+            <p class="text-lg font-bold text-emerald-400 mt-1">Nota final: {{ '%.1f'|format(respuesta.nota_final) }} / 5</p>
+            {% if respuesta.retroalimentacion %}
+            <p class="text-xs text-gray-400 mt-1 italic">"{{ respuesta.retroalimentacion }}"</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-6">
+            <div class="text-center">
+                <p class="text-gray-300 font-semibold mb-4">Evalúa tu desempeño en este trimestre</p>
+                <div class="inline-flex items-center gap-4 bg-gray-900/60 rounded-xl px-8 py-6 border border-gray-700">
+                    <div class="text-center">
+                        <label class="block text-sm font-semibold text-gray-400 mb-2">Puntaje</label>
+                        <div class="relative">
+                            <input type="number" name="puntaje_autoevaluacion" required
+                                   min="0" max="5" step="0.5"
+                                   value="{{ '%.1f'|format(respuesta.puntaje) if respuesta and respuesta.puntaje is not none else '' }}"
+                                   class="w-28 bg-gray-900 border-2 border-brand-500/50 rounded-xl px-4 py-3 text-white text-3xl font-extrabold text-center focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+                        </div>
+                    </div>
+                    <div class="text-left text-gray-500 text-xs leading-relaxed">
+                        <p class="text-amber-400 font-bold text-sm">0 — 5</p>
+                        <p>Mínimo 0, Máximo 5</p>
+                        <p>Pasos de 0.5</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">
+                    {% if respuesta %}Actualizar{% else %}Enviar{% endif %} Autoevaluación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Editar Usuario{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+    <a href="{{ url_for('core.usuarios') }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a usuarios</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-6">Editar Usuario</h2>
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Nombre completo</label>
+                <input type="text" name="nombre_completo" required value="{{ usuario.nombre_completo }}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Correo electrónico</label>
+                <input type="email" name="email" required value="{{ usuario.email }}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Contraseña <span class="text-gray-500 font-normal">(dejar vacío para mantener)</span></label>
+                <input type="password" name="password" minlength="6"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Rol</label>
+                <select name="rol" required
+                        class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="estudiante" {% if usuario.rol == 'estudiante' %}selected{% endif %}>Estudiante</option>
+                    <option value="docente" {% if usuario.rol == 'docente' %}selected{% endif %}>Docente</option>
+                    <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Administrador</option>
+                </select>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('core.usuarios') }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

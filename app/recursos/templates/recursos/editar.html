@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Editar Recurso — {{ item.modulo.titulo }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <a href="{{ url_for('curso.detalle', id=item.modulo.curso_id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">Editar Recurso</h2>
+    <p class="text-sm text-gray-500 mb-6">Tipo: <span class="uppercase font-semibold text-brand-400">{{ item.tipo }}</span> (no se puede cambiar)</p>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Título del recurso</label>
+                <input type="text" name="titulo" required value="{{ item.titulo }}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            {% if item.tipo == 'pdf' %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Reemplazar archivo PDF (opcional)</label>
+                <input type="file" name="archivo_pdf" accept="application/pdf"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                {% if item.archivo_pdf %}<p class="text-xs text-gray-500 mt-1">Archivo actual: {{ item.archivo_pdf.split('/')[-1] }}</p>{% endif %}
+            </div>
+            {% elif item.tipo == 'video' %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Reemplazar video (opcional)</label>
+                <input type="file" name="archivo_video" accept="video/*"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                {% if item.archivo_video %}<p class="text-xs text-gray-500 mt-1">Archivo actual: {{ item.archivo_video.split('/')[-1] }}</p>{% endif %}
+            </div>
+            {% elif item.tipo == 'enlace' %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">URL del enlace</label>
+                <input type="url" name="url_enlace" value="{{ item.url_enlace }}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            {% endif %}
+
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('curso.detalle', id=item.modulo.curso_id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

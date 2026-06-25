@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Recurso — {{ modulo.titulo }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <a href="{{ url_for('curso.detalle', id=modulo.curso_id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+    <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">Nuevo Recurso</h2>
+    <p class="text-sm text-gray-500 mb-6">Módulo: {{ modulo.titulo }}</p>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Título del recurso</label>
+                <input type="text" name="titulo" required placeholder="Ej: Guía de ejercicios — Capítulo 1"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Tipo de recurso</label>
+                <select name="tipo" id="tipo" required onchange="mostrarCampoSegunTipo()"
+                        class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="pdf">Documento PDF</option>
+                    <option value="video">Video</option>
+                    <option value="enlace">Enlace externo</option>
+                </select>
+            </div>
+
+            <!-- Campo PDF: nombre archivo_pdf (independiente del de video) -->
+            <div id="campo_pdf">
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Archivo PDF</label>
+                <input type="file" name="archivo_pdf" accept="application/pdf"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <!-- Campo Video: nombre archivo_video (independiente del de PDF) -->
+            <div id="campo_video" class="hidden">
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Archivo de Video</label>
+                <input type="file" name="archivo_video" accept="video/*"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <!-- Campo Enlace -->
+            <div id="campo_enlace" class="hidden">
+                <label class="block text-sm font-semibold text-gray-300 mb-1">URL del enlace</label>
+                <input type="url" name="url_enlace" placeholder="https://..."
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('curso.detalle', id=modulo.curso_id) }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Publicar Recurso</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function mostrarCampoSegunTipo() {
+        const tipo = document.getElementById('tipo').value;
+        document.getElementById('campo_pdf').classList.toggle('hidden', tipo !== 'pdf');
+        document.getElementById('campo_video').classList.toggle('hidden', tipo !== 'video');
+        document.getElementById('campo_enlace').classList.toggle('hidden', tipo !== 'enlace');
+    }
+</script>
+{% endblock %}

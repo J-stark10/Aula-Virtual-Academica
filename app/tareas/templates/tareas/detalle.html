@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ item.titulo }} — Tarea{% endblock %}
+{% block content %}
+{% set curso = item.modulo.curso %}
+{% set es_gestor = current_user.rol == 'admin' or (current_user.rol == 'docente' and curso.docente_id == current_user.id) %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
+
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+        <div class="flex justify-between items-start flex-wrap gap-3">
+            <div>
+                <span class="px-2 py-1 text-xs font-bold rounded-md bg-amber-500/10 text-amber-400 uppercase">Tarea</span>
+                <h2 class="text-2xl font-extrabold text-white mt-2">{{ item.titulo }}</h2>
+                <p class="text-sm text-gray-500 mt-1">Módulo: {{ item.modulo.titulo }}</p>
+                <div class="flex gap-2 mt-2">
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                        {{ item.trimestre }}° Trimestre
+                    </span>
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded {% if item.dimension == 'ser' %}bg-purple-500/20 text-purple-300 border-purple-500/30{% elif item.dimension == 'saber' %}bg-blue-500/20 text-blue-300 border-blue-500/30{% elif item.dimension == 'hacer' %}bg-green-500/20 text-green-300 border-green-500/30{% else %}bg-amber-500/20 text-amber-300 border-amber-500/30{% endif %}">
+                        {{ DIMENSIONES[item.dimension].label }}: {{ DIMENSIONES[item.dimension].subtitle }}
+                    </span>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-400 uppercase font-bold">Fecha límite</p>
+                <p class="text-lg font-bold text-amber-400">{{ item.fecha_limite.strftime('%d/%m/%Y %H:%M') }}</p>
+                <p class="text-xs text-gray-500">Puntaje máximo: {{ item.puntaje_maximo }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-700">
+            <h3 class="text-sm font-bold text-gray-300 mb-2">Instrucciones</h3>
+            <p class="text-gray-400 whitespace-pre-line">{{ item.instrucciones or "Sin instrucciones adicionales." }}</p>
+        </div>
+
+        {% if es_gestor %}
+        <div class="mt-6 pt-4 border-t border-gray-700 flex gap-3">
+            <a href="{{ url_for('entrega.listar', tarea_id=item.id) }}"
+               class="bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold px-4 py-2 rounded-lg text-sm transition shadow-lg shadow-brand-500/10">
+                Ver entregas ({{ item.entregas|length }})
+            </a>
+            <a href="{{ url_for('tarea.editar', id=item.id) }}"
+               class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-4 py-2 rounded-lg text-sm transition">
+                Editar tarea
+            </a>
+            <a href="{{ url_for('tarea.eliminar', id=item.id) }}"
+               onclick="return confirm('¿Eliminar esta tarea y todas sus entregas?');"
+               class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-4 py-2 rounded-lg text-sm font-semibold border border-red-500/20 transition">
+                Eliminar
+            </a>
+        </div>
+        {% endif %}
+
+        {% if current_user.rol == 'estudiante' and item.dimension != 'autoevaluacion' %}
+        <div class="mt-6 pt-4 border-t border-gray-700">
+            {% if entrega_propia %}
+                <div class="bg-gray-900/40 rounded-lg p-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-200">
+                                Estado:
+                                {% if entrega_propia.estado == 'revisado' %}
+                                <span class="text-emerald-400">Revisado</span>
+                                {% else %}
+                                <span class="text-amber-400">Entregado, pendiente de revisión</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">Entregado el {{ entrega_propia.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}</p>
+                            {% if entrega_propia.calificacion %}
+                            <p class="text-sm font-bold text-emerald-400 mt-1">Nota: {{ entrega_propia.calificacion.nota }} / {{ item.puntaje_maximo }}</p>
+                            {% if entrega_propia.calificacion.retroalimentacion %}
+                            <p class="text-xs text-gray-400 mt-1">"{{ entrega_propia.calificacion.retroalimentacion }}"</p>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('entrega.enviar', tarea_id=item.id) }}"
+                           class="text-sm font-semibold text-brand-400 hover:text-brand-300">Reenviar entrega</a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ url_for('entrega.enviar', tarea_id=item.id) }}"
+                   class="inline-block bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold px-5 py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">
+                    Entregar tarea
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
