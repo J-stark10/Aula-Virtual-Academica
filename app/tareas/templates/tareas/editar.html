@@ -42,7 +42,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1">Fecha límite</label>
-                    <input type="datetime-local" name="fecha_limite" required value="{{ item.fecha_limite.strftime('%Y-%m-%dT%H:%M') }}"
+                    <input type="datetime-local" name="fecha_limite" required value="{{ (item.fecha_limite | bolivia).strftime('%Y-%m-%dT%H:%M') }}"
                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
                 <div>

@@ -1,9 +1,14 @@
 import os
+from datetime import timezone
+from zoneinfo import ZoneInfo
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+
+BOLIVIA_TZ = ZoneInfo("America/La_Paz")
+UTC = timezone.utc
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -37,8 +42,13 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         from app.usuarios.models import Usuario
-
         return Usuario.query.get(int(user_id))
+    
+    @app.template_filter("bolivia")
+    def bolivia_filter(dt):
+        if dt is None:
+            return ""
+        return dt.replace(tzinfo=UTC).astimezone(BOLIVIA_TZ)
 
     # Import y registro de blueprints
     from app.auth import bp_auth

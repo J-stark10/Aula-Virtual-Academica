@@ -124,7 +124,7 @@
                 <div>
                     <p class="font-semibold text-gray-100">{{ a.titulo }}</p>
                     <p class="text-sm text-gray-400 mt-1">{{ a.contenido }}</p>
-                    <p class="text-xs text-gray-500 mt-2">{{ a.fecha_publicacion.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p class="text-xs text-gray-500 mt-2">{{ (a.fecha_publicacion | bolivia).strftime('%d/%m/%Y %H:%M') }}</p>
                 </div>
                 {% if es_gestor %}
                 <a href="{{ url_for('anuncio.eliminar', id=a.id) }}"
@@ -192,7 +192,7 @@
                         <span class="p-1.5 rounded-md bg-amber-500/10 text-amber-400 text-xs font-bold uppercase">Tarea</span>
                         <span class="text-gray-200 font-medium">{{ t.titulo }}</span>
                     </div>
-                    <span class="text-xs text-gray-500">Vence: {{ t.fecha_limite.strftime('%d/%m/%Y %H:%M') }}</span>
+                    <span class="text-xs text-gray-500">Vence: {{ (t.fecha_limite | bolivia).strftime('%d/%m/%Y %H:%M') }}</span>
                 </a>
                 {% endfor %}
 

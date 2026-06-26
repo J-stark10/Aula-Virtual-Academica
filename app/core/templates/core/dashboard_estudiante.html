@@ -30,7 +30,7 @@
                 {% for t in tareas_pendientes %}
                 <a href="{{ url_for('tarea.detalle', id=t.id) }}" class="block bg-gray-900/40 hover:bg-gray-900/70 rounded-lg p-3 transition">
                     <p class="font-semibold text-gray-100">{{ t.titulo }}</p>
-                    <p class="text-xs text-amber-400">Fecha límite: {{ t.fecha_limite.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p class="text-xs text-amber-400">Fecha límite: {{ (t.fecha_limite | bolivia).strftime('%d/%m/%Y %H:%M') }}</p>
                 </a>
                 {% else %}
                 <p class="text-gray-500 text-sm">No tienes tareas pendientes. ¡Vas muy bien!</p>
@@ -44,7 +44,7 @@
                 {% for a in anuncios_recientes %}
                 <div class="border-b border-gray-700/50 py-2">
                     <p class="font-semibold text-gray-100 text-sm">{{ a.titulo }}</p>
-                    <p class="text-xs text-gray-500">{{ a.curso.nombre }} &middot; {{ a.fecha_publicacion.strftime('%d/%m') }}</p>
+                    <p class="text-xs text-gray-500">{{ a.curso.nombre }} &middot; {{ (a.fecha_publicacion | bolivia).strftime('%d/%m') }}</p>
                 </div>
                 {% else %}
                 <p class="text-gray-500 text-sm">No hay anuncios recientes.</p>

@@ -33,7 +33,7 @@
                 {% for e in entregas %}
                 <tr class="hover:bg-gray-750/30 transition">
                     <td class="px-6 py-4 whitespace-nowrap font-bold text-white">{{ e.estudiante.nombre_completo }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-400">{{ e.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-400">{{ (e.fecha_entrega | bolivia).strftime('%d/%m/%Y %H:%M') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         {% if e.estado == 'revisado' %}
                         <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">Revisado</span>

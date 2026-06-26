@@ -25,19 +25,10 @@ class Curso(db.Model):
 
     categoria = db.relationship("Categoria", back_populates="cursos")
     docente = db.relationship("Usuario", back_populates="cursos_dictados")
-    inscripciones = db.relationship(
-        "Inscripcion", back_populates="curso", cascade="all, delete-orphan"
-    )
-    modulos = db.relationship(
-        "Modulo", back_populates="curso", cascade="all, delete-orphan",
-        order_by="Modulo.orden",
-    )
-    anuncios = db.relationship(
-        "Anuncio", back_populates="curso", cascade="all, delete-orphan"
-    )
-    autoevaluaciones_config = db.relationship(
-        "AutoevaluacionConfig", back_populates="curso", cascade="all, delete-orphan"
-    )
+    inscripciones = db.relationship("Inscripcion", back_populates="curso", cascade="all, delete-orphan")
+    modulos = db.relationship("Modulo", back_populates="curso", cascade="all, delete-orphan", order_by="Modulo.orden")
+    anuncios = db.relationship("Anuncio", back_populates="curso", cascade="all, delete-orphan")
+    autoevaluaciones_config = db.relationship("AutoevaluacionConfig", back_populates="curso", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Curso {self.nombre}>"

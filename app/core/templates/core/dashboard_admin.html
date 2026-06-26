@@ -42,7 +42,7 @@
                 {% for c in ultimos_cursos %}
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-200 font-semibold truncate">{{ c.nombre }}</span>
-                    <span class="text-gray-500 text-xs">{{ c.fecha_creacion.strftime('%d/%m/%Y') }}</span>
+                    <span class="text-gray-500 text-xs">{{ (c.fecha_creacion | bolivia).strftime('%d/%m/%Y') }}</span>
                 </div>
                 {% else %}
                 <p class="text-gray-500 text-sm">Aún no hay cursos registrados.</p>
@@ -61,7 +61,7 @@
                     <span class="text-brand-400 font-semibold">{{ log.accion }}</span>
                     <span class="text-gray-400"> — {{ log.detalles }}</span>
                 </div>
-                <span class="text-gray-500 text-xs whitespace-nowrap ml-4">{{ log.fecha.strftime('%d/%m %H:%M') }}</span>
+                <span class="text-gray-500 text-xs whitespace-nowrap ml-4">{{ (log.fecha | bolivia).strftime('%d/%m %H:%M') }}</span>
             </div>
             {% else %}
             <p class="text-gray-500 text-sm">Sin actividad registrada todavía.</p>

@@ -11,14 +11,8 @@ class Modulo(db.Model):
     orden = db.Column(db.Integer, default=1, nullable=False)
 
     curso = db.relationship("Curso", back_populates="modulos")
-    recursos = db.relationship(
-        "Recurso", back_populates="modulo", cascade="all, delete-orphan",
-        order_by="Recurso.id",
-    )
-    tareas = db.relationship(
-        "Tarea", back_populates="modulo", cascade="all, delete-orphan",
-        order_by="Tarea.fecha_limite",
-    )
+    recursos = db.relationship("Recurso", back_populates="modulo", cascade="all, delete-orphan", order_by="Recurso.id")
+    tareas = db.relationship("Tarea", back_populates="modulo", cascade="all, delete-orphan", order_by="Tarea.fecha_limite")
 
     def __repr__(self):
         return f"<Modulo {self.titulo} (curso={self.curso_id})>"

@@ -6,7 +6,7 @@
     <h2 class="text-2xl font-extrabold text-white mt-2 mb-1">
         {% if entrega_existente %}Reenviar Entrega{% else %}Entregar Tarea{% endif %}
     </h2>
-    <p class="text-sm text-gray-500 mb-6">{{ tarea.titulo }} &middot; Fecha límite: {{ tarea.fecha_limite.strftime('%d/%m/%Y %H:%M') }}</p>
+    <p class="text-sm text-gray-500 mb-6">{{ tarea.titulo }} &middot; Fecha límite: {{ (tarea.fecha_limite | bolivia).strftime('%d/%m/%Y %H:%M') }}</p>
 
     <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
         {% if entrega_existente %}

@@ -69,7 +69,7 @@
                     <span class="text-white font-bold">{{ h.nota_nueva }}</span>
                 </div>
                 <div class="text-right">
-                    <p class="text-gray-500 text-xs">{{ h.fecha_cambio.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p class="text-gray-500 text-xs">{{ (h.fecha_cambio | bolivia).strftime('%d/%m/%Y %H:%M') }}</p>
                     <p class="text-gray-600 text-2xs">{{ h.docente.nombre_completo if h.docente else '' }}</p>
                 </div>
             </div>

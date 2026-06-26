@@ -24,9 +24,7 @@ class Tarea(db.Model):
     dimension = db.Column(db.String(20), nullable=False, default="saber")
 
     modulo = db.relationship("Modulo", back_populates="tareas")
-    entregas = db.relationship(
-        "Entrega", back_populates="tarea", cascade="all, delete-orphan"
-    )
+    entregas = db.relationship("Entrega", back_populates="tarea", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Tarea {self.titulo}>"

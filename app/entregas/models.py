@@ -13,10 +13,7 @@ class AutoevaluacionConfig(db.Model):
     __table_args__ = (db.UniqueConstraint("curso_id", "trimestre"),)
 
     curso = db.relationship("Curso", back_populates="autoevaluaciones_config")
-    respuestas = db.relationship(
-        "RespuestaAutoevaluacion", back_populates="config",
-        cascade="all, delete-orphan",
-    )
+    respuestas = db.relationship("RespuestaAutoevaluacion", back_populates="config", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<AutoevaluacionConfig curso={self.curso_id} T{self.trimestre}>"
@@ -64,10 +61,7 @@ class Entrega(db.Model):
 
     tarea = db.relationship("Tarea", back_populates="entregas")
     estudiante = db.relationship("Usuario", back_populates="entregas")
-    calificacion = db.relationship(
-        "Calificacion", back_populates="entrega", uselist=False,
-        cascade="all, delete-orphan",
-    )
+    calificacion = db.relationship("Calificacion", back_populates="entrega", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Entrega tarea={self.tarea_id} estudiante={self.estudiante_id} [{self.estado}]>"

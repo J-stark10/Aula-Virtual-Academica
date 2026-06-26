@@ -34,7 +34,7 @@
                 <tr class="hover:bg-gray-750/30 transition">
                     <td class="px-6 py-4 whitespace-nowrap font-bold text-white">{{ insc.estudiante.nombre_completo }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-400">{{ insc.estudiante.email }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">{{ insc.fecha_inscripcion.strftime('%d/%m/%Y') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">{{ (insc.fecha_inscripcion | bolivia).strftime('%d/%m/%Y') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         <a href="{{ url_for('curso.eliminar_inscripcion', id=curso.id, inscripcion_id=insc.id) }}"
                            onclick="return confirm('¿Remover a este estudiante del curso?');"

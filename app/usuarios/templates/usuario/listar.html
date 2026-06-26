@@ -40,7 +40,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         <span class="px-2 py-1 text-xs font-semibold rounded-md bg-gray-700 text-gray-300 capitalize">{{ item.rol }}</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">{{ item.fecha_registro.strftime('%d/%m/%Y') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">{{ (item.fecha_registro | bolivia).strftime('%d/%m/%Y') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         {% if item.activo %}
                         <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">Activo</span>
