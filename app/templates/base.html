@@ -63,8 +63,8 @@
                             <a href="{{ url_for('curso.unirse') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200">+ Unirse a Curso</a>
                             {% endif %}
                             {% if current_user.rol == 'admin' %}
-                            <a href="{{ url_for('core.usuarios') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200">Usuarios</a>
-                            <a href="{{ url_for('core.categorias') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200">Categorías</a>
+                            <a href="{{ url_for('usuario.listar') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200">Usuarios</a>
+                            <a href="{{ url_for('categoria.listar') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-200">Categorías</a>
                             {% endif %}
                         </div>
                         {% endif %}
@@ -101,8 +101,8 @@
                 <a href="{{ url_for('curso.unirse') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">+ Unirse a Curso</a>
                 {% endif %}
                 {% if current_user.rol == 'admin' %}
-                <a href="{{ url_for('core.usuarios') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Usuarios</a>
-                <a href="{{ url_for('core.categorias') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Categorías</a>
+                <a href="{{ url_for('usuario.listar') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Usuarios</a>
+                <a href="{{ url_for('categoria.listar') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Categorías</a>
                 {% endif %}
             </div>
             {% endif %}

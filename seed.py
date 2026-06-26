@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app.app import create_app, db, bcrypt
-from app.usuario.models import Usuario
+from app.usuarios.models import Usuario
 from app.categoria.models import Categoria
 from app.cursos.models import Curso, Inscripcion
 from app.modulos.models import Modulo

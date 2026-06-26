@@ -2,7 +2,7 @@ from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from app.app import bcrypt, db
 from app.auth import bp_auth
-from app.usuario.models import Usuario
+from app.usuarios.models import Usuario
 from app.utils import registrar_log
 
 @bp_auth.route("/register", methods=["GET", "POST"])

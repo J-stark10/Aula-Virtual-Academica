@@ -39,8 +39,8 @@ class RespuestaAutoevaluacion(db.Model):
 
     config = db.relationship("AutoevaluacionConfig", back_populates="respuestas")
     estudiante = db.relationship("Usuario", foreign_keys=[estudiante_id])
-    docente = db.relationship("Usuario", foreign_keys=[docente_id])
 
+    docente = db.relationship("Usuario", foreign_keys=[docente_id])
     def __repr__(self):
         return f"<RespuestaAutoevaluacion config={self.config_id} est={self.estudiante_id}>"
 

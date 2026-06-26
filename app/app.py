@@ -36,13 +36,15 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        from app.usuario.models import Usuario
+        from app.usuarios.models import Usuario
 
         return Usuario.query.get(int(user_id))
 
     # Import y registro de blueprints
     from app.auth import bp_auth
+    from app.categoria.routes import bp_categoria
     from app.core.routes import bp_core
+    from app.usuarios.routes import bp_usuario
     from app.cursos.routes import bp_curso
     from app.modulos.routes import bp_modulo
     from app.recursos.routes import bp_recurso
@@ -52,6 +54,8 @@ def create_app():
     from app.anuncios.routes import bp_anuncio
 
     app.register_blueprint(bp_core)
+    app.register_blueprint(bp_categoria, url_prefix="/categorias")
+    app.register_blueprint(bp_usuario, url_prefix="/usuarios")
     app.register_blueprint(bp_auth)
     app.register_blueprint(bp_curso, url_prefix="/cursos")
     app.register_blueprint(bp_modulo, url_prefix="/modulos")
@@ -63,7 +67,7 @@ def create_app():
 
     with app.app_context():
         # Import de modelos para registrarlos en el metadata de SQLAlchemy
-        from app.usuario.models import Usuario, LogActividad
+        from app.usuarios.models import Usuario, LogActividad
         from app.categoria.models import Categoria
         from app.cursos.models import Curso, Inscripcion
         from app.modulos.models import Modulo

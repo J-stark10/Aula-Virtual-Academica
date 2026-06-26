@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Nuevo Módulo — {{ curso.nombre }}{% endblock %}
+{% block title %}Nuevo Módulo - {{ curso.nombre }}{% endblock %}
 {% block content %}
 <div class="max-w-lg mx-auto">
     <a href="{{ url_for('curso.detalle', id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver al curso</a>
@@ -8,7 +8,7 @@
         <form method="POST" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-300 mb-1">Título del módulo</label>
-                <input type="text" name="titulo" required placeholder="Ej: Unidad 1 — Álgebra"
+                <input type="text" name="titulo" required placeholder="Ej: Unidad 1 - Álgebra"
                        class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
             </div>
             <div>

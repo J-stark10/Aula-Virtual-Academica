@@ -2,7 +2,7 @@
 {% block title %}Editar Categoría{% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto">
-    <a href="{{ url_for('core.categorias') }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a categorías</a>
+    <a href="{{ url_for('categoria.listar') }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a categorías</a>
     <h2 class="text-2xl font-extrabold text-white mt-2 mb-6">Editar Categoría</h2>
     <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
         <form method="POST" class="space-y-4">
@@ -17,7 +17,7 @@
                           class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">{{ item.descripcion or "" }}</textarea>
             </div>
             <div class="flex gap-3 pt-2">
-                <a href="{{ url_for('core.categorias') }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
+                <a href="{{ url_for('categoria.listar') }}" class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold py-2.5 rounded-lg transition">Cancelar</a>
                 <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold py-2.5 rounded-lg transition shadow-lg shadow-brand-500/10">Guardar</button>
             </div>
         </form>

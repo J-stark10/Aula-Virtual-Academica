@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.app import db
-from app.usuario.models import Usuario
+from app.usuarios.models import Usuario
 from app.categoria.models import Categoria
 from app.cursos.models import Curso, Inscripcion, generar_codigo_unico
 from app.tareas.models import Tarea
@@ -107,6 +107,7 @@ def eliminar(id):
     item = Curso.query.get(id)
     db.session.delete(item)
     db.session.commit()
+    flash("Curso eliminado exitosamente.", "success")
     return redirect(url_for("curso.listar"))
 
 

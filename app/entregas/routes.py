@@ -100,6 +100,7 @@ def eliminar(entrega_id):
     entrega = Entrega.query.get(entrega_id)
     db.session.delete(entrega)
     db.session.commit()
+    flash("Entrega eliminada exitosamente.", "success")
     return redirect(url_for("entrega.listar", tarea_id=entrega.tarea_id))
 
 

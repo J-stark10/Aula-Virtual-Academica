@@ -128,8 +128,8 @@ def detalle_estudiante(curso_id, estudiante_id):
     if current_user.rol == "docente" and curso.docente_id != current_user.id:
         flash("No puedes ver notas de un curso que no te pertenece.", "danger")
         return redirect(url_for("curso.listar"))
+    from app.usuarios.models import Usuario
 
-    from app.usuario.models import Usuario
     estudiante = Usuario.query.get(estudiante_id)
 
     trimestre = request.args.get("trimestre", type=int) or 1

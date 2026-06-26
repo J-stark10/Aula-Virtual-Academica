@@ -80,4 +80,5 @@ def eliminar(id):
     item = Modulo.query.get(id)
     db.session.delete(item)
     db.session.commit()
+    flash("Módulo eliminado exitosamente.", "success")
     return redirect(url_for("curso.detalle", id=item.curso_id))

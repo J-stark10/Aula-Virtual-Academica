@@ -144,6 +144,7 @@ def eliminar(id):
 
     db.session.delete(item)
     db.session.commit()
+    flash("Tarea eliminada exitosamente.", "success")
     return redirect(url_for("curso.detalle", id=curso_id))
 
 

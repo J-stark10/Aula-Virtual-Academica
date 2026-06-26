@@ -4,7 +4,7 @@ from flask import current_app, flash, redirect, url_for
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 from app.app import db
-from app.usuario.models import LogActividad
+from app.usuarios.models import LogActividad
 
 
 def role_required(*roles):
