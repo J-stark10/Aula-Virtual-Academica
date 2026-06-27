@@ -9,7 +9,6 @@ bp_modulo = Blueprint("modulo", __name__, template_folder="templates")
 
 
 def _verificar_propietario(curso):
-    """Un docente solo puede gestionar módulos de sus propios cursos."""
     if current_user.rol == "docente" and curso.docente_id != current_user.id:
         flash("No puedes gestionar módulos de un curso que no te pertenece.", "danger")
         return False

@@ -11,9 +11,6 @@ class Entrega(db.Model):
     archivo = db.Column(db.String(255), nullable=False)  # ruta relativa en uploads/entregas/
     comentario = db.Column(db.String(255))
     fecha_entrega = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    # Solo dos estados persistidos: "entregado" o "revisado".
-    # "pendiente" (sin entregar) se calcula dinámicamente comparando
-    # las inscripciones del curso contra las entregas existentes - no se guarda en BD.
     estado = db.Column(db.String(20), nullable=False, default="entregado")
 
     tarea = db.relationship("Tarea", back_populates="entregas")
@@ -22,3 +19,4 @@ class Entrega(db.Model):
 
     def __repr__(self):
         return f"<Entrega tarea={self.tarea_id} estudiante={self.estudiante_id} [{self.estado}]>"
+

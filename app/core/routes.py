@@ -30,7 +30,6 @@ def _dashboard_admin():
     total_cursos = Curso.query.count()
     total_inscripciones = Inscripcion.query.count()
 
-    # Registros por día (últimos 7 días) para Chart.js
     hoy = datetime.utcnow().date()
     labels = []
     data_registros = []
@@ -82,7 +81,6 @@ def _dashboard_docente():
         else 0
     )
 
-    # Tareas próximas a vencer (siguientes 7 días)
     ahora = datetime.utcnow()
     en_una_semana = ahora + timedelta(days=7)
     tareas_proximas = (
@@ -152,5 +150,6 @@ def _dashboard_estudiante():
         promedio_notas=round(promedio_notas, 1) if promedio_notas else None,
         anuncios_recientes=anuncios_recientes,
     )
+
 
 

@@ -8,7 +8,6 @@ from app.usuarios.models import LogActividad
 
 
 def role_required(*roles):
-    """Restringe el acceso a una vista según el rol del usuario autenticado."""
 
     def decorator(f):
         @wraps(f)
@@ -26,7 +25,7 @@ def role_required(*roles):
 
 
 def registrar_log(accion, detalles=None):
-    """Registra una acción en la bitácora de actividad del sistema."""
+
     try:
         usuario_id = current_user.id if current_user.is_authenticated else None
         entrada = LogActividad(usuario_id=usuario_id, accion=accion, detalles=detalles)
@@ -38,11 +37,7 @@ def registrar_log(accion, detalles=None):
 
 
 def guardar_archivo(file_storage, subcarpeta):
-    """
-    Guarda un archivo subido (FileStorage) dentro de uploads/<subcarpeta>/
-    con un nombre único, y devuelve la ruta relativa para almacenar en BD.
-    Devuelve None si no se proporcionó archivo.
-    """
+
     if not file_storage or file_storage.filename == "":
         return None
 
@@ -55,5 +50,5 @@ def guardar_archivo(file_storage, subcarpeta):
     ruta_absoluta = os.path.join(carpeta_destino, nombre_final)
     file_storage.save(ruta_absoluta)
 
-    # Ruta relativa que se guarda en la base de datos (subcarpeta/nombre_final)
     return f"{subcarpeta}/{nombre_final}"
+

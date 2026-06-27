@@ -7,13 +7,11 @@ from app.utils import guardar_archivo, registrar_log, role_required
 
 bp_recurso = Blueprint("recurso", __name__, template_folder="templates")
 
-
 def _verificar_propietario(curso):
     if current_user.rol == "docente" and curso.docente_id != current_user.id:
         flash("No puedes gestionar recursos de un curso que no te pertenece.", "danger")
         return False
     return True
-
 
 @bp_recurso.route("/modulo/<int:modulo_id>/create", methods=["GET", "POST"])
 @login_required
@@ -32,9 +30,6 @@ def crear(modulo_id):
             flash("El título del recurso es requerido.", "danger")
             return redirect(url_for("recurso.crear", modulo_id=modulo_id))
 
-        # IMPORTANTE: los inputs de PDF y video usan nombres DISTINTOS
-        # (archivo_pdf / archivo_video) para evitar que uno sobrescriba al otro
-        # al usar request.files.get() - bug ya corregido en este proyecto.
         ruta_pdf = None
         ruta_video = None
 
@@ -74,7 +69,6 @@ def crear(modulo_id):
 
     return render_template("recursos/crear.html", modulo=modulo)
 
-
 @bp_recurso.route("/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 @role_required("admin", "docente")
@@ -93,7 +87,6 @@ def editar(id):
 
         item.titulo = titulo
 
-        # Reemplazo opcional de archivo según el tipo de recurso
         if item.tipo == "pdf":
             archivo_pdf = request.files.get("archivo_pdf")
             nueva_ruta = guardar_archivo(archivo_pdf, "recursos")
@@ -115,7 +108,6 @@ def editar(id):
 
     return render_template("recursos/editar.html", item=item)
 
-
 @bp_recurso.route("/delete/<int:id>")
 def eliminar(id):
     item = Recurso.query.get(id)
@@ -127,9 +119,8 @@ def eliminar(id):
     flash("Recurso eliminado exitosamente.", "success")
     return redirect(url_for("curso.detalle", id=curso_id))
 
-
 @bp_recurso.route("/descargar/<path:ruta_relativa>")
 @login_required
 def descargar(ruta_relativa):
-    """Sirve archivos subidos (PDFs/videos) desde la carpeta uploads/."""
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], ruta_relativa)
+

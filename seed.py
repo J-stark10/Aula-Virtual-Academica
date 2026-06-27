@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from app.app import create_app, db, bcrypt
 from app.usuarios.models import Usuario
-from app.categoria.models import Categoria
+from app.categorias.models import Categoria
 from app.cursos.models import Curso, Inscripcion
 from app.modulos.models import Modulo
 from app.recursos.models import Recurso
@@ -22,7 +22,6 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    # ─── USUARIOS ──────────────────────────────────────────────────────
     print("Creando usuarios...")
 
     admin = Usuario(
@@ -94,7 +93,6 @@ with app.app_context():
     db.session.add_all(estudiantes)
     db.session.commit()
 
-    # ─── CATEGORÍAS ────────────────────────────────────────────────────
     print("Creando categorías...")
     cat_exactas = Categoria(nombre="Ciencias Exactas", descripcion="Matemáticas, Física, Química")
     cat_naturales = Categoria(nombre="Ciencias Naturales", descripcion="Biología, Geografía, Ecología")
@@ -104,7 +102,6 @@ with app.app_context():
     db.session.add_all([cat_exactas, cat_naturales, cat_humanidades, cat_idiomas, cat_tecnica])
     db.session.commit()
 
-    # ─── CURSOS ────────────────────────────────────────────────────────
     print("Creando cursos...")
     curso_mate = Curso(
         nombre="Matemáticas - 4to A",
@@ -135,7 +132,6 @@ with app.app_context():
     db.session.add_all(cursos)
     db.session.commit()
 
-    # ─── INSCRIPCIONES ──────────────────────────────────────────────────
     print("Inscribiendo estudiantes...")
     inscripciones_plan = [
         (curso_mate.id, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
@@ -151,7 +147,6 @@ with app.app_context():
     db.session.add_all(inscripciones)
     db.session.commit()
 
-    # ─── MÓDULOS ───────────────────────────────────────────────────────
     print("Creando módulos...")
 
     modulos_data = {
@@ -193,7 +188,6 @@ with app.app_context():
             db.session.add(m)
     db.session.commit()
 
-    # ─── RECURSOS ──────────────────────────────────────────────────────
     print("Creando recursos...")
     recursos_lista = [
         (curso_mate.id, 0, "Video - Solución de ecuaciones lineales", "enlace", "https://www.youtube.com/watch?v=ejemplo_ecuaciones"),
@@ -211,7 +205,6 @@ with app.app_context():
         (curso_ingles.id, 0, "PDF - Verb to be exercises", "enlace", "https://ejemplo.com/verb_to_be.pdf"),
         (curso_ingles.id, 1, "Video - Daily routines vocabulary", "enlace", "https://www.youtube.com/watch?v=ejemplo_routines"),
         (curso_ingles.id, 2, "PDF - Conversation practice", "enlace", "https://ejemplo.com/conversation.pdf"),
-        # Recursos extra para Matemáticas (módulos 4 y 5)
         (curso_mate.id, 3, "PDF - Guía de estadística básica", "enlace", "https://ejemplo.com/estadistica.pdf"),
         (curso_mate.id, 3, "Video - Cómo calcular la media y mediana", "enlace", "https://www.youtube.com/watch?v=ejemplo_media"),
         (curso_mate.id, 4, "PDF - Ejercicios de regla de tres", "enlace", "https://ejemplo.com/regla_tres.pdf"),
@@ -225,16 +218,13 @@ with app.app_context():
         db.session.add(r)
     db.session.commit()
 
-    # ─── TAREAS ────────────────────────────────────────────────────────
     print("Creando tareas...")
 
     t1_inicio = datetime(2026, 3, 2)
     t2_inicio = datetime(2026, 6, 1)
     t3_inicio = datetime(2026, 9, 7)
 
-    # Formato: (curso_id, mod_idx, titulo, instrucciones, fecha_limite, puntaje, trimestre)
     tareas_data = [
-        # ── Matemáticas 4to (T1) ──
         (curso_mate.id, 0, "Ejercicios de ecuaciones lineales", "Resuelve 12 ecuaciones de primer grado. Entrega escaneada en PDF.",
          t1_inicio + timedelta(days=5), 20, 1),
         (curso_mate.id, 0, "Prueba escrita - Ecuaciones", "Evaluación en clase sobre despeje de ecuaciones.",
@@ -247,7 +237,6 @@ with app.app_context():
          t1_inicio + timedelta(days=60), 10, 1),
         (curso_mate.id, 2, "Práctica de geometría básica", "Resuelve 5 ejercicios de áreas y perímetros.",
          t1_inicio + timedelta(days=50), 10, 1),
-        # ── Física 5to (T1) ──
         (curso_fisica.id, 0, "Problemas de MRU y MRUV", "Resuelve 8 problemas de movimiento rectilíneo.",
          t1_inicio + timedelta(days=4), 20, 1),
         (curso_fisica.id, 0, "Laboratorio virtual de caída libre", "Simulación y análisis de caída libre con datos.",
@@ -262,7 +251,6 @@ with app.app_context():
          t1_inicio + timedelta(days=50), 10, 1),
         (curso_fisica.id, 0, "Experimento casero: caída libre", "Realiza un experimento con objetos en caída y registra los resultados.",
          t1_inicio + timedelta(days=55), 5, 1),
-        # ── Lenguaje 3ro (T1) ──
         (curso_lenguaje.id, 0, "Ejercicios de ortografía", "Corrige 20 oraciones con errores de tildación y puntuación.",
          t1_inicio + timedelta(days=5), 15, 1),
         (curso_lenguaje.id, 0, "Dictado calificado", "Texto de 150 palabras con reglas ortográficas.",
@@ -279,7 +267,6 @@ with app.app_context():
          t1_inicio + timedelta(days=48), 10, 1),
         (curso_lenguaje.id, 2, "Exposición oral: mi autor favorito", "Prepara una exposición de 5 minutos sobre un autor boliviano.",
          t1_inicio + timedelta(days=58), 10, 1),
-        # ── Biología 4to (T1) ──
         (curso_bio.id, 0, "Maqueta de la célula", "Elabora una maqueta 3D de una célula vegetal.",
          t1_inicio + timedelta(days=8), 20, 1),
         (curso_bio.id, 0, "Cuestionario de biología celular", "Responde 15 preguntas sobre organelos y funciones.",
@@ -294,7 +281,6 @@ with app.app_context():
          t1_inicio + timedelta(days=60), 5, 1),
         (curso_bio.id, 2, "Mapa conceptual de ecosistemas", "Elabora un mapa con los ecosistemas de Bolivia.",
          t1_inicio + timedelta(days=52), 10, 1),
-        # ── Inglés 3ro (T1) ──
         (curso_ingles.id, 0, "Verb to be worksheet", "Complete 30 sentences with am / is / are.",
          t1_inicio + timedelta(days=5), 15, 1),
         (curso_ingles.id, 0, "Simple present exercises", "Conjugate 20 verbs in simple present tense.",
@@ -313,7 +299,6 @@ with app.app_context():
          t1_inicio + timedelta(days=52), 10, 1),
         (curso_ingles.id, 2, "Write about your family", "Describe your family members in a short paragraph.",
          t1_inicio + timedelta(days=58), 10, 1),
-        # ── Tareas T2 (completas para Matemáticas) ──
         (curso_mate.id, 2, "Problemas de geometría", "Resuelve 8 problemas con teorema de Pitágoras.",
          t2_inicio + timedelta(days=5), 20, 2),
         (curso_mate.id, 3, "Ejercicios de estadística", "Calcula media, mediana y moda de 3 conjuntos de datos.",
@@ -324,7 +309,6 @@ with app.app_context():
          t2_inicio + timedelta(days=28), 20, 2),
         (curso_mate.id, 0, "Laboratorio ecuaciones avanzadas", "Resuelve sistemas de ecuaciones 2x2 por sustitución e igualación.",
          t2_inicio + timedelta(days=35), 10, 2),
-        # ── Tareas T3 (completas solo para Matemáticas) ──
         (curso_mate.id, 3, "Proyecto final de estadística", "Encuesta en el curso, tabulación, gráficos y conclusiones.",
          t3_inicio + timedelta(days=10), 30, 3),
         (curso_mate.id, 4, "Taller de proporciones", "Resuelve 10 problemas de repartos proporcionales y porcentajes.",
@@ -333,7 +317,6 @@ with app.app_context():
          t3_inicio + timedelta(days=25), 25, 3),
         (curso_mate.id, 0, "Prueba final ecuaciones", "Evaluación final con ecuaciones lineales, cuadráticas y sistemas 2x2.",
          t3_inicio + timedelta(days=32), 25, 3),
-        # ── Tareas T2 (1 por curso para los demás) ──
         (curso_fisica.id, 2, "Problemas de trabajo y energía", "Resuelve 6 problemas de conservación de energía.",
          t2_inicio + timedelta(days=3), 20, 2),
         (curso_lenguaje.id, 2, "Ensayo: literatura boliviana", "Investiga y escribe sobre un autor boliviano.",
@@ -363,7 +346,6 @@ with app.app_context():
         tareas_creadas.append((curso_id, mod_idx, t, trim))
     db.session.commit()
 
-    # ─── ENTREGAS Y CALIFICACIONES ────────────────────────────────
     print("Creando entregas y calificaciones...")
     print("  Trimestre 1: todos los cursos")
     print("  Trimestres 2 y 3: solo Matemáticas - 4to A")
@@ -413,7 +395,6 @@ with app.app_context():
             est = estudiantes[est_idx]
             nota = generar_nota(est_idx * 7 + tarea.id, tarea.puntaje_maximo)
 
-            # Forzar notas bajas en Matemáticas para demostrar colores
             if curso_id == curso_mate.id:
                 if est_idx == 3:  # María Choque - bajo rendimiento
                     nota = round(tarea.puntaje_maximo * (0.15 + (tarea.id % 15) / 100), 1)
@@ -425,7 +406,6 @@ with app.app_context():
             retro = retro_algunas[retro_idx % len(retro_algunas)]
             retro_idx += 1
 
-            # Entregas tardías dispersas (~20% de las entregas)
             semilla = est_idx * 13 + tarea.id * 7
             f_entrega = tarea.fecha_limite
             if semilla % 5 == 0:
@@ -454,7 +434,6 @@ with app.app_context():
     db.session.commit()
     print(f"  {entrega_count} entregas calificadas creadas.")
 
-    # ─── ANUNCIOS ──────────────────────────────────────────────────────
     print("Creando anuncios...")
     anuncios_data = [
         (curso_mate.id, "¡Bienvenidos a Matemáticas 4to!",
@@ -484,7 +463,6 @@ with app.app_context():
         anuncio_count += 1
     db.session.commit()
 
-    # ─── CREDENCIALES ──────────────────────────────────────────────────
     total_tareas_t1 = sum(1 for _, _, _, t in tareas_creadas if t == 1)
     total_tareas_t2 = sum(1 for _, _, _, t in tareas_creadas if t == 2)
     total_tareas_t3 = sum(1 for _, _, _, t in tareas_creadas if t == 3)
@@ -503,3 +481,4 @@ with app.app_context():
     print(f"  Curso completo (T1+T2+T3): Matemáticas - 4to A")
     print(f"  {anuncio_count} anuncios")
     print("=" * 55)
+

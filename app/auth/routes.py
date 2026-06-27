@@ -18,7 +18,6 @@ def register():
 
         hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
 
-        # El primer usuario registrado en el sistema se vuelve administrador
         es_primero = Usuario.query.count() == 0
         rol = "admin" if es_primero else "estudiante"
 
@@ -72,3 +71,4 @@ def logout():
     registrar_log("Cierre de sesión", f"Usuario {email} salió del sistema")
     flash("Sesión cerrada correctamente.", "info")
     return redirect(url_for("auth.login"))
+

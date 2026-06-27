@@ -23,15 +23,14 @@ def create_app():
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "aula-virtual-academica-dev-key-2026")
 
     db_url = os.environ.get("DATABASE_URL", "sqlite:///aula_virtual.db")
+
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
+        
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Carpeta de archivos subidos (PDFs y videos de recursos, entregas de estudiantes)
-    app.config["UPLOAD_FOLDER"] = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "static", "uploads"
-    )
+    app.config["UPLOAD_FOLDER"] = os.path.join( os.path.dirname(os.path.abspath(__file__)), "static", "uploads")
     app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024  # 64 MB máximo por archivo
 
     db.init_app(app)
@@ -50,9 +49,8 @@ def create_app():
             return ""
         return dt.replace(tzinfo=UTC).astimezone(BOLIVIA_TZ)
 
-    # Import y registro de blueprints
     from app.auth import bp_auth
-    from app.categoria.routes import bp_categoria
+    from app.categorias.routes import bp_categoria
     from app.core.routes import bp_core
     from app.usuarios.routes import bp_usuario
     from app.cursos.routes import bp_curso
@@ -76,9 +74,8 @@ def create_app():
     app.register_blueprint(bp_anuncio, url_prefix="/anuncios")
 
     with app.app_context():
-        # Import de modelos para registrarlos en el metadata de SQLAlchemy
         from app.usuarios.models import Usuario, LogActividad
-        from app.categoria.models import Categoria
+        from app.categorias.models import Categoria
         from app.cursos.models import Curso, Inscripcion
         from app.modulos.models import Modulo
         from app.recursos.models import Recurso
@@ -90,3 +87,4 @@ def create_app():
         db.create_all()
 
     return app
+

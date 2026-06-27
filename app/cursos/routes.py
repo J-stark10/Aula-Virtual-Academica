@@ -3,7 +3,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.app import db
 from app.usuarios.models import Usuario
-from app.categoria.models import Categoria
+from app.categorias.models import Categoria
 from app.cursos.models import Curso, Inscripcion, generar_codigo_unico
 from app.utils import registrar_log, role_required
 

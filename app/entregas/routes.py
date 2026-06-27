@@ -82,8 +82,6 @@ def listar(tarea_id):
     entregas = Entrega.query.filter_by(tarea_id=tarea_id).all()
     entregados_ids = {e.estudiante_id for e in entregas}
 
-    # "Pendiente" se calcula en tiempo real: inscritos en el curso
-    # que aún no aparecen en la tabla de entregas para esta tarea.
     pendientes = [
         insc.estudiante
         for insc in curso.inscripciones
@@ -108,5 +106,5 @@ def eliminar(entrega_id):
 @login_required
 @role_required("admin", "docente")
 def descargar(ruta_relativa):
-    """Permite al docente descargar el archivo entregado por un estudiante."""
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], ruta_relativa)
+
