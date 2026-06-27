@@ -3,10 +3,60 @@
 {% block content %}
 <div class="space-y-6">
     <div>
-        <a href="{{ url_for('calificacion.ver_notas_curso', curso_id=curso.id, trimestre=trimestre) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a notas del curso</a>
+        <a href="{{ url_for('calificacion.ver_notas_curso', curso_id=curso.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a notas del curso</a>
         <h2 class="text-2xl font-extrabold text-white mt-2">{{ estudiante.nombre_completo }}</h2>
-        <p class="text-sm text-gray-500">{{ curso.nombre }} &middot; {{ trimestre }}° Trimestre</p>
+        <p class="text-sm text-gray-500">{{ curso.nombre }}</p>
     </div>
+
+    {% if nota_final is not none %}
+        {% if nota_final >= 80 %}
+            {% set color = "emerald" %}
+            {% set etiqueta = "Buen rendimiento" %}
+        {% elif nota_final >= 51 %}
+            {% set color = "amber" %}
+            {% set etiqueta = "Rendimiento regular" %}
+        {% else %}
+            {% set color = "red" %}
+            {% set etiqueta = "Necesita mejorar" %}
+        {% endif %}
+
+        {% if color == "emerald" %}
+        <div class="bg-gray-800 rounded-xl border border-emerald-500/30 p-6 text-center relative overflow-hidden">
+            <div class="absolute inset-x-0 top-0 h-1 bg-emerald-500/60"></div>
+            <p class="text-xs text-gray-400 uppercase font-bold tracking-widest">Nota Final del Curso</p>
+            <div class="mt-2 flex items-end justify-center gap-1">
+                <span class="text-5xl font-extrabold text-emerald-300">{{ "%.1f"|format(nota_final) }}</span>
+                <span class="text-gray-500 text-lg pb-1.5">/ 100</span>
+            </div>
+            <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">{{ etiqueta }}</span>
+        </div>
+        {% elif color == "amber" %}
+        <div class="bg-gray-800 rounded-xl border border-amber-500/30 p-6 text-center relative overflow-hidden">
+            <div class="absolute inset-x-0 top-0 h-1 bg-amber-500/60"></div>
+            <p class="text-xs text-gray-400 uppercase font-bold tracking-widest">Nota Final del Curso</p>
+            <div class="mt-2 flex items-end justify-center gap-1">
+                <span class="text-5xl font-extrabold text-amber-300">{{ "%.1f"|format(nota_final) }}</span>
+                <span class="text-gray-500 text-lg pb-1.5">/ 100</span>
+            </div>
+            <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">{{ etiqueta }}</span>
+        </div>
+        {% else %}
+        <div class="bg-gray-800 rounded-xl border border-red-500/30 p-6 text-center relative overflow-hidden">
+            <div class="absolute inset-x-0 top-0 h-1 bg-red-500/60"></div>
+            <p class="text-xs text-gray-400 uppercase font-bold tracking-widest">Nota Final del Curso</p>
+            <div class="mt-2 flex items-end justify-center gap-1">
+                <span class="text-5xl font-extrabold text-red-300">{{ "%.1f"|format(nota_final) }}</span>
+                <span class="text-gray-500 text-lg pb-1.5">/ 100</span>
+            </div>
+            <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-300 border border-red-500/30">{{ etiqueta }}</span>
+        </div>
+        {% endif %}
+    {% else %}
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center">
+        <p class="text-xs text-gray-400 uppercase font-bold tracking-widest">Nota Final del Curso</p>
+        <p class="text-2xl font-bold text-gray-500 mt-2">Sin calificaciones aún</p>
+    </div>
+    {% endif %}
 
     <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
         <h3 class="font-bold text-white mb-4">Tareas calificadas</h3>
@@ -20,24 +70,37 @@
                     <p class="text-xs text-gray-500 italic">"{{ tc.retroalimentacion }}"</p>
                     {% endif %}
                 </div>
-                <div class="text-right">
+                <div class="whitespace-nowrap">
                     {% if tc.nota is not none %}
-                    {% set tpct = (tc.nota / tc.max * 100) if tc.max > 0 else 0 %}
-                    <span class="font-bold {% if tpct >= 80 %}text-emerald-400{% elif tpct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
-                        {{ "%.1f"|format(tc.nota) }}
-                    </span>
-                    <span class="text-gray-500 text-xs"> / {{ "%.0f"|format(tc.max) }}</span>
+                        {% set tpct = (tc.nota / tc.max * 100) if tc.max > 0 else 0 %}
+                        {% if tpct >= 80 %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            {{ "%.1f"|format(tc.nota) }}<span class="text-emerald-400/60 font-medium">/{{ "%.0f"|format(tc.max) }}</span>
+                        </span>
+                        {% elif tpct >= 51 %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            {{ "%.1f"|format(tc.nota) }}<span class="text-amber-400/60 font-medium">/{{ "%.0f"|format(tc.max) }}</span>
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold bg-red-500/15 text-red-300 border border-red-500/30">
+                            {{ "%.1f"|format(tc.nota) }}<span class="text-red-400/60 font-medium">/{{ "%.0f"|format(tc.max) }}</span>
+                        </span>
+                        {% endif %}
                     {% elif tc.entregada %}
-                    <span class="text-amber-400 text-xs font-semibold">Pendiente de calificar</span>
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                        Pendiente de calificar
+                    </span>
                     {% else %}
-                    <span class="text-gray-600 text-xs">No entregado</span>
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-700/30 text-gray-500 border border-gray-600/30">
+                        No entregado
+                    </span>
                     {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-sm text-center py-4">No hay tareas en este trimestre.</p>
+        <p class="text-gray-500 text-sm text-center py-4">No hay tareas en este curso.</p>
         {% endif %}
     </div>
 </div>

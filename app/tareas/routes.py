@@ -29,8 +29,6 @@ def crear(modulo_id):
         instrucciones = request.form.get("instrucciones", "").strip()
         fecha_limite_str = request.form["fecha_limite"]
         puntaje_maximo = float(request.form.get("puntaje_maximo", 100))
-        trimestre = int(request.form.get("trimestre", 1))
-
         if not titulo or not fecha_limite_str:
             flash("El título y la fecha límite son requeridos.", "danger")
             return redirect(url_for("tarea.crear", modulo_id=modulo_id))
@@ -43,7 +41,6 @@ def crear(modulo_id):
             instrucciones=instrucciones,
             fecha_limite=fecha_limite,
             puntaje_maximo=puntaje_maximo,
-            trimestre=trimestre,
         )
         db.session.add(nueva)
         db.session.commit()
@@ -68,8 +65,6 @@ def editar(id):
         instrucciones = request.form.get("instrucciones", "").strip()
         fecha_limite_str = request.form["fecha_limite"]
         puntaje_maximo = float(request.form.get("puntaje_maximo", 100))
-        trimestre = int(request.form.get("trimestre", 1))
-
         if not titulo or not fecha_limite_str:
             flash("El título y la fecha límite son requeridos.", "danger")
             return redirect(url_for("tarea.editar", id=id))
@@ -78,7 +73,6 @@ def editar(id):
         item.instrucciones = instrucciones
         item.fecha_limite = datetime.strptime(fecha_limite_str, "%Y-%m-%dT%H:%M")
         item.puntaje_maximo = puntaje_maximo
-        item.trimestre = trimestre
         db.session.commit()
 
         registrar_log("Editar Tarea", f"Tarea ID {id} actualizada: {titulo}")

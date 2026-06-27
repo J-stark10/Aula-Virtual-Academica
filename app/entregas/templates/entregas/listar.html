@@ -5,7 +5,6 @@
     <div>
         <a href="{{ url_for('tarea.detalle', id=tarea.id) }}" class="text-sm text-brand-400 hover:text-brand-300">&larr; Volver a la tarea</a>
         <h2 class="text-2xl font-extrabold text-white mt-2">Entregas de "{{ tarea.titulo }}"</h2>
-        <p class="text-sm text-gray-500 mt-1">{{ tarea.trimestre }}° Trimestre</p>
         <p class="text-sm text-gray-500">{{ entregas|length }} entrega(s) &middot; {{ pendientes|length }} pendiente(s)</p>
     </div>
 

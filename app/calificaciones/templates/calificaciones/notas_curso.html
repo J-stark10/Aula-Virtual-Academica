@@ -13,10 +13,8 @@
                 <thead class="bg-gray-900/50 text-brand-400 uppercase text-xs">
                     <tr>
                         <th class="px-4 py-4 text-left font-bold">Estudiante</th>
-                        <th class="px-3 py-4 text-center font-bold">1° Trimestre</th>
-                        <th class="px-3 py-4 text-center font-bold">2° Trimestre</th>
-                        <th class="px-3 py-4 text-center font-bold">3° Trimestre</th>
                         <th class="px-3 py-4 text-center font-bold">Nota Final</th>
+                        <th class="px-3 py-4 text-center font-bold">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-700/50">
@@ -24,33 +22,37 @@
                     <tr class="hover:bg-gray-750/30 transition">
                         <td class="px-4 py-3 whitespace-nowrap font-bold text-white">{{ fila.estudiante.nombre_completo }}</td>
                         <td class="px-3 py-3 text-center whitespace-nowrap">
-                            {% set pct = fila.t1 %}
-                            <span class="font-bold {% if pct >= 80 %}text-emerald-400{% elif pct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
-                                {{ "%.1f"|format(fila.t1) }}
+                            {% if fila.nota_final is not none %}
+                                {% set pct = fila.nota_final %}
+                                {% if pct >= 80 %}
+                                <span class="inline-flex items-center justify-center min-w-[64px] px-3 py-1.5 rounded-full text-sm font-extrabold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                    {{ "%.1f"|format(pct) }}
+                                </span>
+                                {% elif pct >= 51 %}
+                                <span class="inline-flex items-center justify-center min-w-[64px] px-3 py-1.5 rounded-full text-sm font-extrabold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                    {{ "%.1f"|format(pct) }}
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center justify-center min-w-[64px] px-3 py-1.5 rounded-full text-sm font-extrabold bg-red-500/15 text-red-300 border border-red-500/30">
+                                    {{ "%.1f"|format(pct) }}
+                                </span>
+                                {% endif %}
+                            {% else %}
+                            <span class="inline-flex items-center justify-center min-w-[64px] px-3 py-1.5 rounded-full text-sm font-semibold bg-gray-700/30 text-gray-500 border border-gray-600/30">
+                                Sin nota
                             </span>
+                            {% endif %}
                         </td>
                         <td class="px-3 py-3 text-center whitespace-nowrap">
-                            {% set pct = fila.t2 %}
-                            <span class="font-bold {% if pct >= 80 %}text-emerald-400{% elif pct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
-                                {{ "%.1f"|format(fila.t2) }}
-                            </span>
-                        </td>
-                        <td class="px-3 py-3 text-center whitespace-nowrap">
-                            {% set pct = fila.t3 %}
-                            <span class="font-bold {% if pct >= 80 %}text-emerald-400{% elif pct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
-                                {{ "%.1f"|format(fila.t3) }}
-                            </span>
-                        </td>
-                        <td class="px-3 py-3 text-center whitespace-nowrap">
-                            {% set pct = fila.nota_final %}
-                            <span class="text-lg font-extrabold {% if pct >= 80 %}text-emerald-400{% elif pct >= 50 %}text-amber-400{% else %}text-red-400{% endif %}">
-                                {{ "%.1f"|format(fila.nota_final) }}
-                            </span>
+                            <a href="{{ url_for('calificacion.detalle_estudiante', curso_id=curso.id, estudiante_id=fila.estudiante.id) }}"
+                               class="inline-block bg-brand-500 hover:bg-brand-600 text-gray-900 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-lg shadow-brand-500/10">
+                                Ver detalle
+                            </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">No hay estudiantes inscritos en este curso.</td>
+                        <td colspan="3" class="px-6 py-12 text-center text-gray-500">No hay estudiantes inscritos en este curso.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

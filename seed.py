@@ -332,7 +332,7 @@ with app.app_context():
         return fecha_limite - timedelta(days=dias_antes)
 
     tareas_creadas = []
-    for i, (curso_id, mod_idx, titulo, instr, f_lim, puntaje, trim) in enumerate(tareas_data):
+    for i, (curso_id, mod_idx, titulo, instr, f_lim, puntaje, _trim) in enumerate(tareas_data):
         t = Tarea(
             modulo_id=modulos[curso_id][mod_idx].id,
             titulo=titulo,
@@ -340,15 +340,14 @@ with app.app_context():
             fecha_publicacion=fecha_pub(f_lim, i * 7 + sum(ord(c) for c in titulo)),
             fecha_limite=f_lim,
             puntaje_maximo=puntaje,
-            trimestre=trim,
+
+
         )
         db.session.add(t)
-        tareas_creadas.append((curso_id, mod_idx, t, trim))
+        tareas_creadas.append(t)
     db.session.commit()
 
     print("Creando entregas y calificaciones...")
-    print("  Trimestre 1: todos los cursos")
-    print("  Trimestres 2 y 3: solo Matemáticas - 4to A")
 
     def generar_nota(seed, puntaje_max):
         base = [38, 42, 30, 45, 35, 40, 28, 37, 43, 33, 39, 41, 29, 44, 34, 36, 31, 46, 27, 32, 47, 26, 48, 25, 38]
@@ -387,9 +386,8 @@ with app.app_context():
     retro_idx = 0
 
     entrega_count = 0
-    for curso_id, mod_idx, tarea, trim in tareas_creadas:
-        if trim != 1 and curso_id != curso_mate.id:
-            continue
+    for tarea in tareas_creadas:
+        curso_id = tarea.modulo.curso_id
         indices = curso_estudiantes.get(curso_id, [])
         for est_idx in indices:
             est = estudiantes[est_idx]
@@ -463,9 +461,6 @@ with app.app_context():
         anuncio_count += 1
     db.session.commit()
 
-    total_tareas_t1 = sum(1 for _, _, _, t in tareas_creadas if t == 1)
-    total_tareas_t2 = sum(1 for _, _, _, t in tareas_creadas if t == 2)
-    total_tareas_t3 = sum(1 for _, _, _, t in tareas_creadas if t == 3)
     print("\n¡Datos de prueba creados exitosamente!")
     print("=" * 55)
     print("Credenciales de acceso:")
@@ -476,9 +471,8 @@ with app.app_context():
     print(f"  Todos los estudiantes: XXXXXX@colegio.bo / estudiante123")
     print("=" * 55)
     print(f"  {len(estudiantes)} estudiantes · {len(cursos)} cursos")
-    print(f"  Tareas: {total_tareas_t1} T1 · {total_tareas_t2} T2 · {total_tareas_t3} T3")
+    print(f"  {len(tareas_creadas)} tareas")
     print(f"  {entrega_count} entregas calificadas")
-    print(f"  Curso completo (T1+T2+T3): Matemáticas - 4to A")
     print(f"  {anuncio_count} anuncios")
     print("=" * 55)
 

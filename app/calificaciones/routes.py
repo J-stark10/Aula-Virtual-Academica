@@ -55,6 +55,22 @@ def calificar(entrega_id):
 
     return render_template("calificaciones/calificar.html", entrega=entrega)
 
+def nota_final_estudiante(estudiante_id, curso_id):
+    modulos = Modulo.query.filter_by(curso_id=curso_id).all()
+    nota_total = 0
+    max_total = 0
+    for modulo in modulos:
+        tareas = Tarea.query.filter_by(modulo_id=modulo.id).all()
+        for tarea in tareas:
+            entrega = Entrega.query.filter_by(
+                tarea_id=tarea.id, estudiante_id=estudiante_id
+            ).first()
+            if entrega and entrega.calificacion:
+                max_total += tarea.puntaje_maximo
+                nota_total += entrega.calificacion.nota
+    return round((nota_total / max_total) * 100, 1) if max_total > 0 else None
+
+
 @bp_calificacion.route("/curso/<int:curso_id>/notas")
 @login_required
 @role_required("admin", "docente")
@@ -69,13 +85,9 @@ def ver_notas_curso(curso_id):
     notas_data = []
     for insc in inscripciones:
         est = insc.estudiante
-        t1 = total_estudiante_trimestre(est.id, curso_id, 1)
-        t2 = total_estudiante_trimestre(est.id, curso_id, 2)
-        t3 = total_estudiante_trimestre(est.id, curso_id, 3)
-        nota_final = round((t1 + t2 + t3) / 3, 1)
+        nota_final = nota_final_estudiante(est.id, curso_id)
         notas_data.append({
             "estudiante": est,
-            "t1": t1, "t2": t2, "t3": t3,
             "nota_final": nota_final,
         })
 
@@ -84,6 +96,7 @@ def ver_notas_curso(curso_id):
         curso=curso,
         notas_data=notas_data,
     )
+
 
 @bp_calificacion.route("/curso/<int:curso_id>/estudiante/<int:estudiante_id>")
 @login_required
@@ -97,13 +110,11 @@ def detalle_estudiante(curso_id, estudiante_id):
 
     estudiante = Usuario.query.get(estudiante_id)
 
-    trimestre = request.args.get("trimestre", type=int) or 1
-
     modulos = Modulo.query.filter_by(curso_id=curso_id).all()
     modulo_ids = [m.id for m in modulos]
 
     tareas = (
-        Tarea.query.filter(Tarea.modulo_id.in_(modulo_ids), Tarea.trimestre == trimestre)
+        Tarea.query.filter(Tarea.modulo_id.in_(modulo_ids))
         .order_by(Tarea.fecha_limite)
         .all()
     )
@@ -126,13 +137,16 @@ def detalle_estudiante(curso_id, estudiante_id):
             "entregada": entrega is not None,
         })
 
+    nota_final = nota_final_estudiante(estudiante_id, curso_id)
+
     return render_template(
         "calificaciones/detalle_estudiante.html",
         curso=curso,
         estudiante=estudiante,
-        trimestre=trimestre,
         tareas_con_nota=tareas_con_nota,
+        nota_final=nota_final,
     )
+
 
 @bp_calificacion.route("/curso/<int:curso_id>/mis-notas")
 @login_required
@@ -144,70 +158,32 @@ def mis_notas_curso(curso_id):
         flash("No estás inscrito en este curso.", "danger")
         return redirect(url_for("curso.listar"))
 
-    nota_final_sum = 0
-    nota_final_count = 0
-    trimestres = []
-    for t in [1, 2, 3]:
-        promedio = total_estudiante_trimestre(current_user.id, curso.id, t)
-        modulos = Modulo.query.filter_by(curso_id=curso.id).all()
-        modulo_ids = [m.id for m in modulos]
-        tareas_del_trimestre = (
-            Tarea.query.filter(Tarea.modulo_id.in_(modulo_ids), Tarea.trimestre == t)
-            .order_by(Tarea.fecha_limite)
-            .all()
-        )
-        tareas_data = []
-        for tarea in tareas_del_trimestre:
-            entrega = Entrega.query.filter_by(
-                tarea_id=tarea.id, estudiante_id=current_user.id
-            ).first()
-            if entrega and entrega.calificacion:
-                tareas_data.append({
-                    "tarea": tarea,
-                    "nota": entrega.calificacion.nota,
-                    "max": tarea.puntaje_maximo,
-                    "retroalimentacion": entrega.calificacion.retroalimentacion,
-                })
-        trimestres.append({
-            "trimestre": t,
-            "promedio": promedio,
-            "tareas": tareas_data,
-        })
-        if promedio > 0:
-            nota_final_sum += promedio
-            nota_final_count += 1
+    modulos = Modulo.query.filter_by(curso_id=curso.id).all()
+    modulo_ids = [m.id for m in modulos]
+    tareas = (
+        Tarea.query.filter(Tarea.modulo_id.in_(modulo_ids))
+        .order_by(Tarea.fecha_limite)
+        .all()
+    )
 
-    nota_final = round(nota_final_sum / nota_final_count, 1) if nota_final_count > 0 else None
+    tareas_data = []
+    for tarea in tareas:
+        entrega = Entrega.query.filter_by(
+            tarea_id=tarea.id, estudiante_id=current_user.id
+        ).first()
+        if entrega and entrega.calificacion:
+            tareas_data.append({
+                "tarea": tarea,
+                "nota": entrega.calificacion.nota,
+                "max": tarea.puntaje_maximo,
+                "retroalimentacion": entrega.calificacion.retroalimentacion,
+            })
+
+    nota_final = nota_final_estudiante(current_user.id, curso_id)
 
     return render_template(
         "calificaciones/mis_notas_curso.html",
         curso=curso,
-        trimestres=trimestres,
+        tareas=tareas_data,
         nota_final=nota_final,
     )
-
-
-def total_estudiante_trimestre(estudiante_id, curso_id, trimestre):
-    modulos = Modulo.query.filter_by(curso_id=curso_id).all()
-
-    nota_total = 0
-    max_total = 0
-
-    for modulo in modulos:
-        tareas = Tarea.query.filter_by(
-            modulo_id=modulo.id,
-            trimestre=trimestre
-        ).all()
-
-        for tarea in tareas:
-            max_total += tarea.puntaje_maximo
-
-            entrega = Entrega.query.filter_by(
-                tarea_id=tarea.id,
-                estudiante_id=estudiante_id
-            ).first()
-
-            if entrega and entrega.calificacion:
-                nota_total += entrega.calificacion.nota
-
-    return round((nota_total / max_total) * 100, 1) if max_total > 0 else 0

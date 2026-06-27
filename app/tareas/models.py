@@ -12,7 +12,6 @@ class Tarea(db.Model):
     fecha_publicacion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     fecha_limite = db.Column(db.DateTime, nullable=False)
     puntaje_maximo = db.Column(db.Float, default=100.0, nullable=False)
-    trimestre = db.Column(db.Integer, nullable=False, default=1)
 
     modulo = db.relationship("Modulo", back_populates="tareas")
     entregas = db.relationship("Entrega", back_populates="tarea", cascade="all, delete-orphan")

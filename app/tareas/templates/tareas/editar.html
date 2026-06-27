@@ -17,21 +17,10 @@
                 <textarea name="instrucciones" rows="4"
                           class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">{{ item.instrucciones or "" }}</textarea>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-1">Trimestre</label>
-                    <select name="trimestre"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <option value="1" {% if item.trimestre == 1 %}selected{% endif %}>1er Trimestre</option>
-                        <option value="2" {% if item.trimestre == 2 %}selected{% endif %}>2do Trimestre</option>
-                        <option value="3" {% if item.trimestre == 3 %}selected{% endif %}>3er Trimestre</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-1">Fecha límite</label>
-                    <input type="datetime-local" name="fecha_limite" required value="{{ (item.fecha_limite | bolivia).strftime('%Y-%m-%dT%H:%M') }}"
-                           class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-1">Fecha límite</label>
+                <input type="datetime-local" name="fecha_limite" required value="{{ (item.fecha_limite | bolivia).strftime('%Y-%m-%dT%H:%M') }}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
             </div>
             <div>
                 <label class="block text-sm font-semibold text-gray-300 mb-1">Puntaje máximo</label>
