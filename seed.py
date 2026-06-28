@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+import random
 from datetime import datetime, timedelta
 from app.app import create_app, db, bcrypt
 from app.usuarios.models import Usuario
@@ -17,18 +21,45 @@ def hash_pw(plain):
     return bcrypt.generate_password_hash(plain).decode("utf-8")
 
 
+# ---------------------------------------------------------------------------
+# Fechas de registro dispersas entre el 21/06/2026 y hoy (27/06/2026),
+# para que el gráfico de registros de los últimos 7 días del dashboard
+# admin tenga una distribución realista.
+# ---------------------------------------------------------------------------
+FECHA_INICIO_REGISTROS = datetime(2026, 6, 21, 8, 0, 0)
+FECHA_HOY = datetime(2026, 6, 27, 18, 0, 0)
+RANGO_DIAS_REGISTRO = (FECHA_HOY - FECHA_INICIO_REGISTROS).days
+
+
+def fecha_registro_dispersa(seed):
+    """
+    Genera una fecha de registro determinística (basada en `seed`) dentro del
+    rango 21-jun-2026 a hoy, para que todos los registros caigan en la
+    ventana de los últimos 7 días que muestra el gráfico del dashboard.
+    """
+    rnd = random.Random(seed)
+    dia_offset = rnd.randint(0, RANGO_DIAS_REGISTRO)
+    hora_offset = rnd.randint(7, 20)  # horario escolar/administrativo
+    minuto_offset = rnd.randint(0, 59)
+    return FECHA_INICIO_REGISTROS + timedelta(days=dia_offset, hours=hora_offset - 8, minutes=minuto_offset)
+
+
 with app.app_context():
     print("Limpiando base de datos...")
     db.drop_all()
     db.create_all()
 
+    # -----------------------------------------------------------------
+    # USUARIOS
+    # -----------------------------------------------------------------
     print("Creando usuarios...")
 
     admin = Usuario(
-        nombre_completo="Lic. Juan Carlos Mamani",
+        nombre_completo="Lic. Juan Carlos Mamani Quispe",
         email="admin@colegio.bo",
         password=hash_pw("admin123"),
         rol="admin",
+        fecha_registro=fecha_registro_dispersa("admin"),
     )
 
     profe_rosa = Usuario(
@@ -36,25 +67,35 @@ with app.app_context():
         email="rosa.quispe@colegio.bo",
         password=hash_pw("docente123"),
         rol="docente",
+        fecha_registro=fecha_registro_dispersa("rosa"),
     )
     profe_marcelo = Usuario(
         nombre_completo="Prof. Marcelo Choque Huanca",
         email="marcelo.choque@colegio.bo",
         password=hash_pw("docente123"),
         rol="docente",
+        fecha_registro=fecha_registro_dispersa("marcelo"),
     )
     profe_juana = Usuario(
         nombre_completo="Prof. Juana Pérez Mamani",
         email="juana.perez@colegio.bo",
         password=hash_pw("docente123"),
         rol="docente",
+        fecha_registro=fecha_registro_dispersa("juana"),
+    )
+    profe_franklin = Usuario(
+        nombre_completo="Prof. Franklin Yujra Apaza",
+        email="franklin.yujra@colegio.bo",
+        password=hash_pw("docente123"),
+        rol="docente",
+        fecha_registro=fecha_registro_dispersa("franklin"),
     )
 
-    db.session.add_all([admin, profe_rosa, profe_marcelo, profe_juana])
+    db.session.add_all([admin, profe_rosa, profe_marcelo, profe_juana, profe_franklin])
     db.session.commit()
 
     estudiantes_data = [
-        ("Caleb Acarapi Pari", "caleb.acarapi@colegio.bo"),
+        ("Javier Jose", "javier.jose@colegio.bo"),
         ("Alejandro Paco Mamani", "alejandro.paco@colegio.bo"),
         ("Carlos Pachari Rodriguez", "carlos.pachari@colegio.bo"),
         ("María Choque Quispe", "maria.choque@colegio.bo"),
@@ -88,55 +129,72 @@ with app.app_context():
             email=email,
             password=hash_pw("estudiante123"),
             rol="estudiante",
+            fecha_registro=fecha_registro_dispersa(email),
         )
         estudiantes.append(est)
     db.session.add_all(estudiantes)
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # CATEGORÍAS
+    # -----------------------------------------------------------------
     print("Creando categorías...")
-    cat_exactas = Categoria(nombre="Ciencias Exactas", descripcion="Matemáticas, Física, Química")
-    cat_naturales = Categoria(nombre="Ciencias Naturales", descripcion="Biología, Geografía, Ecología")
-    cat_humanidades = Categoria(nombre="Humanidades", descripcion="Lenguaje, Historia, Filosofía")
-    cat_idiomas = Categoria(nombre="Idiomas", descripcion="Inglés, Francés")
-    cat_tecnica = Categoria(nombre="Educación Técnica", descripcion="Computación, Artes Plásticas, Música")
+    cat_exactas = Categoria(nombre="Ciencias Exactas", descripcion="Matemática, Física, Química")
+    cat_naturales = Categoria(nombre="Ciencias Naturales", descripcion="Biología-Geografía, Ecología")
+    cat_humanidades = Categoria(nombre="Humanidades", descripcion="Comunicación y Lenguajes, Ciencias Sociales")
+    cat_idiomas = Categoria(nombre="Idiomas", descripcion="Inglés")
+    cat_tecnica = Categoria(nombre="Educación Técnica", descripcion="Técnica Tecnológica, Educación Física, Valores")
     db.session.add_all([cat_exactas, cat_naturales, cat_humanidades, cat_idiomas, cat_tecnica])
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # CURSOS — currículo boliviano (Secundaria Comunitaria Productiva,
+    # Ley de Educación N° 070 "Avelino Siñani - Elizardo Pérez")
+    # -----------------------------------------------------------------
     print("Creando cursos...")
     curso_mate = Curso(
-        nombre="Matemáticas - 4to A",
-        descripcion="Álgebra elemental, ecuaciones lineales, funciones cuadráticas y geometría básica.",
+        nombre="Matemática - 4to de Secundaria",
+        descripcion="Álgebra elemental, ecuaciones lineales y cuadráticas, geometría plana y estadística básica.",
         categoria_id=cat_exactas.id, docente_id=profe_rosa.id,
     )
     curso_fisica = Curso(
-        nombre="Física - 5to A",
-        descripcion="Cinemática, dinámica, leyes de Newton, trabajo y energía.",
+        nombre="Física - 5to de Secundaria",
+        descripcion="Cinemática, dinámica, leyes de Newton, trabajo, energía y potencia mecánica.",
         categoria_id=cat_exactas.id, docente_id=profe_rosa.id,
     )
-    curso_lenguaje = Curso(
-        nombre="Lenguaje - 3ro A",
-        descripcion="Gramática normativa, redacción de textos, análisis literario y ortografía.",
+    curso_comunicacion = Curso(
+        nombre="Comunicación y Lenguajes - 3ro de Secundaria",
+        descripcion="Gramática normativa, redacción de textos, análisis literario y ortografía del castellano.",
         categoria_id=cat_humanidades.id, docente_id=profe_marcelo.id,
     )
+    curso_sociales = Curso(
+        nombre="Ciencias Sociales - 4to de Secundaria",
+        descripcion="Historia de Bolivia, geografía económica y procesos sociales del Estado Plurinacional.",
+        categoria_id=cat_humanidades.id, docente_id=profe_franklin.id,
+    )
     curso_bio = Curso(
-        nombre="Biología - 4to A",
+        nombre="Biología-Geografía - 4to de Secundaria",
         descripcion="Biología celular, genética mendeliana, ecosistemas y biodiversidad boliviana.",
         categoria_id=cat_naturales.id, docente_id=profe_marcelo.id,
     )
     curso_ingles = Curso(
-        nombre="Inglés - 3ro A",
+        nombre="Inglés - 3ro de Secundaria",
         descripcion="Gramática básica, vocabulario esencial, reading comprehension y conversación elemental.",
         categoria_id=cat_idiomas.id, docente_id=profe_juana.id,
     )
-    cursos = [curso_mate, curso_fisica, curso_lenguaje, curso_bio, curso_ingles]
+    cursos = [curso_mate, curso_fisica, curso_comunicacion, curso_sociales, curso_bio, curso_ingles]
     db.session.add_all(cursos)
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # INSCRIPCIONES
+    # -----------------------------------------------------------------
     print("Inscribiendo estudiantes...")
     inscripciones_plan = [
         (curso_mate.id, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
         (curso_fisica.id, [0, 1, 2, 3, 4, 12, 13, 14, 15, 16, 17]),
-        (curso_lenguaje.id, [2, 3, 4, 5, 6, 7, 10, 11, 18, 19, 20, 21]),
+        (curso_comunicacion.id, [2, 3, 4, 5, 6, 7, 10, 11, 18, 19, 20, 21]),
+        (curso_sociales.id, [1, 5, 6, 9, 11, 13, 17, 19, 21, 23]),
         (curso_bio.id, [8, 9, 12, 13, 14, 15, 22, 23, 24, 0]),
         (curso_ingles.id, [16, 17, 18, 19, 20, 21, 22, 23, 24, 1]),
     ]
@@ -147,6 +205,9 @@ with app.app_context():
     db.session.add_all(inscripciones)
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # MÓDULOS
+    # -----------------------------------------------------------------
     print("Creando módulos...")
 
     modulos_data = {
@@ -155,17 +216,21 @@ with app.app_context():
             ("Unidad 2 - Funciones Cuadráticas", "Gráfica de parábolas, vértice, eje de simetría y raíces.", 2),
             ("Unidad 3 - Geometría Plana", "Ángulos, triángulos, teorema de Pitágoras y áreas.", 3),
             ("Unidad 4 - Estadística y Probabilidad", "Media, mediana, moda, probabilidad simple y compuesta.", 4),
-            ("Unidad 5 - Razones y Proporciones", "Regla de tres, porcentajes, repartos proporcionales.", 5),
         ],
         curso_fisica.id: [
             ("Unidad 1 - Cinemática", "MRU, MRUV, caída libre y gráficas de movimiento.", 1),
             ("Unidad 2 - Dinámica", "Leyes de Newton, fuerza, masa y aceleración.", 2),
             ("Unidad 3 - Trabajo y Energía", "Trabajo mecánico, energía cinética y potencial.", 3),
         ],
-        curso_lenguaje.id: [
+        curso_comunicacion.id: [
             ("Unidad 1 - Gramática y Ortografía", "Reglas ortográficas, tildación y signos de puntuación.", 1),
             ("Unidad 2 - Redacción de Textos", "Estructura del párrafo, textos narrativos y descriptivos.", 2),
             ("Unidad 3 - Literatura Boliviana", "Autores representativos: Alcides Arguedas, Adela Zamudio.", 3),
+        ],
+        curso_sociales.id: [
+            ("Unidad 1 - Historia de Bolivia: Periodo Colonial", "La Colonia, el sistema de la mita y las rebeliones indígenas.", 1),
+            ("Unidad 2 - Independencia y Formación del Estado", "Las guerras de independencia y la fundación de Bolivia en 1825.", 2),
+            ("Unidad 3 - Geografía Económica de Bolivia", "Regiones productivas, recursos naturales y comercio exterior.", 3),
         ],
         curso_bio.id: [
             ("Unidad 1 - La Célula", "Estructura celular, tipos de células y organelos.", 1),
@@ -188,27 +253,76 @@ with app.app_context():
             db.session.add(m)
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # RECURSOS — URLs raíz reales y verificadas (Khan Academy en español,
+    # unProfesor.com y Ministerio de Educación de Bolivia). Se usan
+    # secciones/canales raíz en vez de rutas profundas no verificables,
+    # para no inventar enlaces que pudieran no existir.
+    # -----------------------------------------------------------------
     print("Creando recursos...")
+
+    URL_KHAN_MATE = "https://es.khanacademy.org/math"
+    URL_KHAN_FISICA = "https://es.khanacademy.org/science/fisica-pe-pre-u"
+    URL_KHAN_QUIMICA = "https://es.khanacademy.org/science/ciencias-preparacion-educacion-superior"
+    URL_KHAN_BIO = "https://es.khanacademy.org/science/biology/biology"
+    URL_KHAN_YT = "https://www.youtube.com/user/KhanAcademyEspanol"
+
+    URL_UP_MATE = "https://www.unprofesor.com/matematicas/"
+    URL_UP_LENGUA = "https://www.unprofesor.com/lengua-espanola/"
+    URL_UP_SOCIALES = "https://www.unprofesor.com/ciencias-sociales/"
+    URL_UP_NATURALES = "https://www.unprofesor.com/ciencias-naturales/"
+    URL_UP_FISICA = "https://www.unprofesor.com/fisica/"
+    URL_UP_INGLES = "https://www.unprofesor.com/ingles/"
+    URL_UP_YT = "https://www.youtube.com/@Unprofesor"
+
+    URL_MINEDU_BIBLIOTECA = "https://educa.minedu.gob.bo/"
+    URL_MINEDU_INSTITUCIONAL = "https://www.minedu.gob.bo/"
+
     recursos_lista = [
-        (curso_mate.id, 0, "Video - Solución de ecuaciones lineales", "enlace", "https://www.youtube.com/watch?v=ejemplo_ecuaciones"),
-        (curso_mate.id, 1, "PDF - Ejercicios de funciones cuadráticas", "enlace", "https://ejemplo.com/funciones_cuadraticas.pdf"),
-        (curso_mate.id, 2, "Video - Teorema de Pitágoras explicado", "enlace", "https://www.youtube.com/watch?v=ejemplo_pitagoras"),
-        (curso_fisica.id, 0, "PDF - Guía de ejercicios de cinemática", "enlace", "https://ejemplo.com/guia_cinematica.pdf"),
-        (curso_fisica.id, 1, "Video - Segunda ley de Newton", "enlace", "https://www.youtube.com/watch?v=ejemplo_newton"),
-        (curso_fisica.id, 2, "PDF - Problemas de trabajo y energía", "enlace", "https://ejemplo.com/trabajo_energia.pdf"),
-        (curso_lenguaje.id, 0, "PDF - Reglas de tildación", "enlace", "https://ejemplo.com/reglas_tildacion.pdf"),
-        (curso_lenguaje.id, 1, "Video - Cómo redactar un párrafo", "enlace", "https://www.youtube.com/watch?v=ejemplo_redaccion"),
-        (curso_lenguaje.id, 2, "PDF - Poesía de Adela Zamudio", "enlace", "https://ejemplo.com/adela_zamudio.pdf"),
-        (curso_bio.id, 0, "Video - La célula y sus partes", "enlace", "https://www.youtube.com/watch?v=ejemplo_celula"),
-        (curso_bio.id, 1, "PDF - Ejercicios de genética mendeliana", "enlace", "https://ejemplo.com/genetica.pdf"),
-        (curso_bio.id, 2, "PDF - Ecosistemas de Bolivia", "enlace", "https://ejemplo.com/ecosistemas_bolivia.pdf"),
-        (curso_ingles.id, 0, "PDF - Verb to be exercises", "enlace", "https://ejemplo.com/verb_to_be.pdf"),
-        (curso_ingles.id, 1, "Video - Daily routines vocabulary", "enlace", "https://www.youtube.com/watch?v=ejemplo_routines"),
-        (curso_ingles.id, 2, "PDF - Conversation practice", "enlace", "https://ejemplo.com/conversation.pdf"),
-        (curso_mate.id, 3, "PDF - Guía de estadística básica", "enlace", "https://ejemplo.com/estadistica.pdf"),
-        (curso_mate.id, 3, "Video - Cómo calcular la media y mediana", "enlace", "https://www.youtube.com/watch?v=ejemplo_media"),
-        (curso_mate.id, 4, "PDF - Ejercicios de regla de tres", "enlace", "https://ejemplo.com/regla_tres.pdf"),
-        (curso_mate.id, 4, "Video - Repartos proporcionales", "enlace", "https://www.youtube.com/watch?v=ejemplo_repartos"),
+        # (curso_id, mod_idx, titulo, tipo, url)
+        (curso_mate.id, 0, "Khan Academy - Álgebra y ecuaciones lineales", "enlace", URL_KHAN_MATE),
+        (curso_mate.id, 0, "unProfesor - Matemáticas (ejercicios resueltos)", "enlace", URL_UP_MATE),
+        (curso_mate.id, 1, "Khan Academy - Funciones cuadráticas", "enlace", URL_KHAN_MATE),
+        (curso_mate.id, 1, "unProfesor - Matemáticas: funciones y gráficas", "enlace", URL_UP_MATE),
+        (curso_mate.id, 2, "Khan Academy - Geometría plana y teorema de Pitágoras", "enlace", URL_KHAN_MATE),
+        (curso_mate.id, 2, "unProfesor - Geometría (triángulos y polígonos)", "enlace", URL_UP_MATE),
+        (curso_mate.id, 3, "Khan Academy - Estadística y probabilidad", "enlace", URL_KHAN_MATE),
+        (curso_mate.id, 3, "Canal de YouTube - Khan Academy en Español", "video", URL_KHAN_YT),
+
+        (curso_fisica.id, 0, "Khan Academy - Física: cinemática", "enlace", URL_KHAN_FISICA),
+        (curso_fisica.id, 0, "unProfesor - Física (movimiento y velocidad)", "enlace", URL_UP_FISICA),
+        (curso_fisica.id, 1, "Khan Academy - Física: dinámica y leyes de Newton", "enlace", URL_KHAN_FISICA),
+        (curso_fisica.id, 1, "unProfesor - Física (fuerzas)", "enlace", URL_UP_FISICA),
+        (curso_fisica.id, 2, "Khan Academy - Trabajo y energía", "enlace", URL_KHAN_FISICA),
+        (curso_fisica.id, 2, "Canal de YouTube - Khan Academy en Español", "video", URL_KHAN_YT),
+
+        (curso_comunicacion.id, 0, "unProfesor - Lengua española: ortografía", "enlace", URL_UP_LENGUA),
+        (curso_comunicacion.id, 0, "unProfesor - Reglas de tildación y puntuación", "enlace", URL_UP_LENGUA),
+        (curso_comunicacion.id, 1, "unProfesor - Redacción de textos", "enlace", URL_UP_LENGUA),
+        (curso_comunicacion.id, 1, "Canal de YouTube - unProfesor", "video", URL_UP_YT),
+        (curso_comunicacion.id, 2, "unProfesor - Literatura y análisis de textos", "enlace", URL_UP_LENGUA),
+        (curso_comunicacion.id, 2, "Biblioteca digital - Ministerio de Educación de Bolivia", "enlace", URL_MINEDU_BIBLIOTECA),
+
+        (curso_sociales.id, 0, "unProfesor - Ciencias Sociales: historia", "enlace", URL_UP_SOCIALES),
+        (curso_sociales.id, 0, "Ministerio de Educación de Bolivia - sitio institucional", "enlace", URL_MINEDU_INSTITUCIONAL),
+        (curso_sociales.id, 1, "unProfesor - Ciencias Sociales: independencia americana", "enlace", URL_UP_SOCIALES),
+        (curso_sociales.id, 1, "Biblioteca digital - Ministerio de Educación de Bolivia", "enlace", URL_MINEDU_BIBLIOTECA),
+        (curso_sociales.id, 2, "unProfesor - Ciencias Sociales: geografía", "enlace", URL_UP_SOCIALES),
+        (curso_sociales.id, 2, "Canal de YouTube - unProfesor", "video", URL_UP_YT),
+
+        (curso_bio.id, 0, "Khan Academy - Biología: la célula", "enlace", URL_KHAN_BIO),
+        (curso_bio.id, 0, "unProfesor - Ciencias Naturales: la célula", "enlace", URL_UP_NATURALES),
+        (curso_bio.id, 1, "Khan Academy - Genética mendeliana", "enlace", URL_KHAN_BIO),
+        (curso_bio.id, 1, "unProfesor - Ciencias Naturales: genética", "enlace", URL_UP_NATURALES),
+        (curso_bio.id, 2, "Khan Academy - Química y ecosistemas (recursos naturales)", "enlace", URL_KHAN_QUIMICA),
+        (curso_bio.id, 2, "unProfesor - Ciencias Naturales: ecosistemas", "enlace", URL_UP_NATURALES),
+
+        (curso_ingles.id, 0, "unProfesor - Inglés: gramática básica", "enlace", URL_UP_INGLES),
+        (curso_ingles.id, 0, "Canal de YouTube - Khan Academy en Español", "video", URL_KHAN_YT),
+        (curso_ingles.id, 1, "unProfesor - Inglés: vocabulario", "enlace", URL_UP_INGLES),
+        (curso_ingles.id, 1, "Canal de YouTube - unProfesor", "video", URL_UP_YT),
+        (curso_ingles.id, 2, "unProfesor - Inglés: conversación", "enlace", URL_UP_INGLES),
+        (curso_ingles.id, 2, "Ministerio de Educación de Bolivia - Programa Inglés para Todos", "enlace", URL_MINEDU_INSTITUCIONAL),
     ]
     for curso_id, mod_idx, titulo, tipo, url in recursos_lista:
         r = Recurso(
@@ -217,114 +331,117 @@ with app.app_context():
         )
         db.session.add(r)
     db.session.commit()
+    print(f"  {len(recursos_lista)} recursos creados (URLs raíz verificadas).")
 
+    # -----------------------------------------------------------------
+    # TAREAS — distribuidas en los 3 trimestres del año escolar
+    # boliviano 2026 (febrero a noviembre aprox., aquí hasta junio
+    # porque "hoy" en el sistema es 27/06/2026).
+    # -----------------------------------------------------------------
     print("Creando tareas...")
 
-    t1_inicio = datetime(2026, 3, 2)
-    t2_inicio = datetime(2026, 6, 1)
-    t3_inicio = datetime(2026, 9, 7)
+    t1_inicio = datetime(2026, 2, 9)    # Trimestre 1: inicio de clases (febrero)
+    t2_inicio = datetime(2026, 5, 4)    # Trimestre 2
+    t3_inicio = datetime(2026, 9, 7)    # Trimestre 3 (a futuro respecto a "hoy")
 
     tareas_data = [
+        # --- Matemática ---
         (curso_mate.id, 0, "Ejercicios de ecuaciones lineales", "Resuelve 12 ecuaciones de primer grado. Entrega escaneada en PDF.",
-         t1_inicio + timedelta(days=5), 20, 1),
+         t1_inicio + timedelta(days=12), 20, 1),
         (curso_mate.id, 0, "Prueba escrita - Ecuaciones", "Evaluación en clase sobre despeje de ecuaciones.",
-         t1_inicio + timedelta(days=12), 25, 1),
+         t1_inicio + timedelta(days=20), 25, 1),
         (curso_mate.id, 1, "Gráfica de funciones cuadráticas", "Grafica 5 funciones indicando vértice y raíces.",
-         t1_inicio + timedelta(days=30), 20, 1),
+         t1_inicio + timedelta(days=35), 20, 1),
         (curso_mate.id, 1, "Cuestionario de funciones", "Responde 10 preguntas teórico-prácticas sobre funciones.",
-         t1_inicio + timedelta(days=40), 15, 1),
+         t1_inicio + timedelta(days=45), 15, 1),
+        (curso_mate.id, 2, "Práctica de geometría básica", "Resuelve 5 ejercicios de áreas y perímetros.",
+         t1_inicio + timedelta(days=55), 10, 1),
         (curso_mate.id, 0, "Participación y puntualidad", "Asistencia, participación activa y entrega puntual de trabajos.",
          t1_inicio + timedelta(days=60), 10, 1),
-        (curso_mate.id, 2, "Práctica de geometría básica", "Resuelve 5 ejercicios de áreas y perímetros.",
-         t1_inicio + timedelta(days=50), 10, 1),
+        (curso_mate.id, 2, "Problemas de geometría", "Resuelve 8 problemas con teorema de Pitágoras.",
+         t2_inicio + timedelta(days=10), 20, 2),
+        (curso_mate.id, 3, "Ejercicios de estadística", "Calcula media, mediana y moda de 3 conjuntos de datos.",
+         t2_inicio + timedelta(days=20), 25, 2),
+        (curso_mate.id, 1, "Examen funciones avanzadas", "Evaluación escrita sobre transformaciones de funciones cuadráticas.",
+         t2_inicio + timedelta(days=30), 25, 2),
+        (curso_mate.id, 0, "Laboratorio ecuaciones avanzadas", "Resuelve sistemas de ecuaciones 2x2 por sustitución e igualación.",
+         t2_inicio + timedelta(days=58), 10, 2),
+
+        # --- Física ---
         (curso_fisica.id, 0, "Problemas de MRU y MRUV", "Resuelve 8 problemas de movimiento rectilíneo.",
-         t1_inicio + timedelta(days=4), 20, 1),
+         t1_inicio + timedelta(days=10), 20, 1),
         (curso_fisica.id, 0, "Laboratorio virtual de caída libre", "Simulación y análisis de caída libre con datos.",
-         t1_inicio + timedelta(days=15), 15, 1),
+         t1_inicio + timedelta(days=22), 15, 1),
         (curso_fisica.id, 1, "Ejercicios de dinámica", "Aplica las leyes de Newton a 6 situaciones.",
-         t1_inicio + timedelta(days=35), 20, 1),
+         t1_inicio + timedelta(days=40), 20, 1),
         (curso_fisica.id, 1, "Prueba de leyes de Newton", "Evaluación escrita con problemas de aplicación.",
-         t1_inicio + timedelta(days=45), 20, 1),
+         t1_inicio + timedelta(days=50), 20, 1),
         (curso_fisica.id, 0, "Disciplina en laboratorio", "Comportamiento adecuado durante prácticas de laboratorio.",
          t1_inicio + timedelta(days=60), 10, 1),
         (curso_fisica.id, 2, "Cuestionario de conceptos físicos", "Responde 10 preguntas teóricas sobre cinemática y dinámica.",
-         t1_inicio + timedelta(days=50), 10, 1),
-        (curso_fisica.id, 0, "Experimento casero: caída libre", "Realiza un experimento con objetos en caída y registra los resultados.",
-         t1_inicio + timedelta(days=55), 5, 1),
-        (curso_lenguaje.id, 0, "Ejercicios de ortografía", "Corrige 20 oraciones con errores de tildación y puntuación.",
-         t1_inicio + timedelta(days=5), 15, 1),
-        (curso_lenguaje.id, 0, "Dictado calificado", "Texto de 150 palabras con reglas ortográficas.",
-         t1_inicio + timedelta(days=10), 10, 1),
-        (curso_lenguaje.id, 1, "Redacción: texto narrativo", "Escribe un cuento de 2 páginas sobre tu comunidad.",
-         t1_inicio + timedelta(days=25), 25, 1),
-        (curso_lenguaje.id, 1, "Análisis de texto descriptivo", "Identifica recursos literarios en un texto dado.",
-         t1_inicio + timedelta(days=38), 20, 1),
-        (curso_lenguaje.id, 0, "Participación en clase", "Intervenciones pertinentes y respeto a la opinión de los compañeros.",
-         t1_inicio + timedelta(days=60), 5, 1),
-        (curso_lenguaje.id, 0, "Orden y respeto en clase", "Mantener el orden, escuchar activamente y respetar los turnos.",
-         t1_inicio + timedelta(days=60), 5, 1),
-        (curso_lenguaje.id, 2, "Ejercicios de comprensión lectora", "Lee un texto y responde 10 preguntas de comprensión.",
-         t1_inicio + timedelta(days=48), 10, 1),
-        (curso_lenguaje.id, 2, "Exposición oral: mi autor favorito", "Prepara una exposición de 5 minutos sobre un autor boliviano.",
          t1_inicio + timedelta(days=58), 10, 1),
-        (curso_bio.id, 0, "Maqueta de la célula", "Elabora una maqueta 3D de una célula vegetal.",
-         t1_inicio + timedelta(days=8), 20, 1),
-        (curso_bio.id, 0, "Cuestionario de biología celular", "Responde 15 preguntas sobre organelos y funciones.",
+        (curso_fisica.id, 2, "Problemas de trabajo y energía", "Resuelve 6 problemas de conservación de energía.",
+         t2_inicio + timedelta(days=55), 20, 2),
+
+        # --- Comunicación y Lenguajes ---
+        (curso_comunicacion.id, 0, "Ejercicios de ortografía", "Corrige 20 oraciones con errores de tildación y puntuación.",
+         t1_inicio + timedelta(days=12), 15, 1),
+        (curso_comunicacion.id, 0, "Dictado calificado", "Texto de 150 palabras con reglas ortográficas.",
+         t1_inicio + timedelta(days=18), 10, 1),
+        (curso_comunicacion.id, 1, "Redacción: texto narrativo", "Escribe un cuento de 2 páginas sobre tu comunidad.",
+         t1_inicio + timedelta(days=32), 25, 1),
+        (curso_comunicacion.id, 1, "Análisis de texto descriptivo", "Identifica recursos literarios en un texto dado.",
+         t1_inicio + timedelta(days=45), 20, 1),
+        (curso_comunicacion.id, 0, "Participación en clase", "Intervenciones pertinentes y respeto a la opinión de los compañeros.",
+         t1_inicio + timedelta(days=60), 5, 1),
+        (curso_comunicacion.id, 2, "Ejercicios de comprensión lectora", "Lee un texto y responde 10 preguntas de comprensión.",
+         t1_inicio + timedelta(days=55), 10, 1),
+        (curso_comunicacion.id, 2, "Ensayo: literatura boliviana", "Investiga y escribe sobre un autor boliviano.",
+         t2_inicio + timedelta(days=60), 25, 2),
+
+        # --- Ciencias Sociales ---
+        (curso_sociales.id, 0, "Cuestionario: la Colonia en Bolivia", "Responde 12 preguntas sobre el periodo colonial y la mita.",
          t1_inicio + timedelta(days=15), 20, 1),
+        (curso_sociales.id, 0, "Línea de tiempo de rebeliones indígenas", "Elabora una línea de tiempo de las rebeliones del siglo XVIII.",
+         t1_inicio + timedelta(days=28), 15, 1),
+        (curso_sociales.id, 1, "Ensayo: la independencia de Bolivia", "Escribe un ensayo de 2 páginas sobre el proceso independentista.",
+         t1_inicio + timedelta(days=42), 25, 1),
+        (curso_sociales.id, 1, "Mapa conceptual: fundación de Bolivia", "Elabora un mapa conceptual del proceso de fundación en 1825.",
+         t1_inicio + timedelta(days=52), 15, 1),
+        (curso_sociales.id, 2, "Mapa de regiones productivas", "Dibuja y describe las principales regiones productivas de Bolivia.",
+         t2_inicio + timedelta(days=50), 20, 2),
+
+        # --- Biología-Geografía ---
+        (curso_bio.id, 0, "Maqueta de la célula", "Elabora una maqueta 3D de una célula vegetal.",
+         t1_inicio + timedelta(days=15), 20, 1),
+        (curso_bio.id, 0, "Cuestionario de biología celular", "Responde 15 preguntas sobre organelos y funciones.",
+         t1_inicio + timedelta(days=22), 20, 1),
         (curso_bio.id, 1, "Cruces genéticos", "Resuelve 5 cruces monohíbridos con cuadros de Punnett.",
-         t1_inicio + timedelta(days=30), 20, 1),
+         t1_inicio + timedelta(days=38), 20, 1),
         (curso_bio.id, 1, "Prueba de genética", "Evaluación escrita con problemas de herencia.",
-         t1_inicio + timedelta(days=42), 20, 1),
+         t1_inicio + timedelta(days=48), 20, 1),
         (curso_bio.id, 0, "Cuidado del material", "Responsabilidad en el uso de materiales de laboratorio.",
          t1_inicio + timedelta(days=60), 5, 1),
-        (curso_bio.id, 1, "Respeto por la naturaleza", "Actitud positiva hacia el medio ambiente y los ecosistemas.",
-         t1_inicio + timedelta(days=60), 5, 1),
         (curso_bio.id, 2, "Mapa conceptual de ecosistemas", "Elabora un mapa con los ecosistemas de Bolivia.",
-         t1_inicio + timedelta(days=52), 10, 1),
+         t1_inicio + timedelta(days=58), 10, 1),
+        (curso_bio.id, 2, "Mapa de ecosistemas", "Dibuja y describe 3 ecosistemas de Bolivia.",
+         t2_inicio + timedelta(days=53), 20, 2),
+
+        # --- Inglés ---
         (curso_ingles.id, 0, "Verb to be worksheet", "Complete 30 sentences with am / is / are.",
-         t1_inicio + timedelta(days=5), 15, 1),
+         t1_inicio + timedelta(days=12), 15, 1),
         (curso_ingles.id, 0, "Simple present exercises", "Conjugate 20 verbs in simple present tense.",
-         t1_inicio + timedelta(days=15), 15, 1),
+         t1_inicio + timedelta(days=22), 15, 1),
         (curso_ingles.id, 1, "My daily routine", "Write a paragraph describing your daily routine.",
-         t1_inicio + timedelta(days=28), 20, 1),
+         t1_inicio + timedelta(days=35), 20, 1),
         (curso_ingles.id, 1, "Vocabulary quiz", "Match 30 words with their meanings.",
-         t1_inicio + timedelta(days=40), 10, 1),
+         t1_inicio + timedelta(days=48), 10, 1),
         (curso_ingles.id, 0, "Effort and participation", "Actitud positiva y participación activa en clase.",
          t1_inicio + timedelta(days=60), 5, 1),
-        (curso_ingles.id, 1, "Responsibility", "Entrega puntual de tareas, orden en el cuaderno y respeto.",
-         t1_inicio + timedelta(days=60), 5, 1),
         (curso_ingles.id, 2, "Reading comprehension", "Read a short text and answer 5 questions.",
-         t1_inicio + timedelta(days=48), 10, 1),
-        (curso_ingles.id, 2, "Listening practice", "Listen to an audio and complete the exercises.",
-         t1_inicio + timedelta(days=52), 10, 1),
-        (curso_ingles.id, 2, "Write about your family", "Describe your family members in a short paragraph.",
-         t1_inicio + timedelta(days=58), 10, 1),
-        (curso_mate.id, 2, "Problemas de geometría", "Resuelve 8 problemas con teorema de Pitágoras.",
-         t2_inicio + timedelta(days=5), 20, 2),
-        (curso_mate.id, 3, "Ejercicios de estadística", "Calcula media, mediana y moda de 3 conjuntos de datos.",
-         t2_inicio + timedelta(days=12), 25, 2),
-        (curso_mate.id, 1, "Examen funciones avanzadas", "Evaluación escrita sobre trasformaciones de funciones cuadráticas.",
-         t2_inicio + timedelta(days=20), 25, 2),
-        (curso_mate.id, 4, "Problemas de proporciones", "Resuelve 6 problemas de regla de tres y porcentajes.",
-         t2_inicio + timedelta(days=28), 20, 2),
-        (curso_mate.id, 0, "Laboratorio ecuaciones avanzadas", "Resuelve sistemas de ecuaciones 2x2 por sustitución e igualación.",
-         t2_inicio + timedelta(days=35), 10, 2),
-        (curso_mate.id, 3, "Proyecto final de estadística", "Encuesta en el curso, tabulación, gráficos y conclusiones.",
-         t3_inicio + timedelta(days=10), 30, 3),
-        (curso_mate.id, 4, "Taller de proporciones", "Resuelve 10 problemas de repartos proporcionales y porcentajes.",
-         t3_inicio + timedelta(days=18), 20, 3),
-        (curso_mate.id, 2, "Examen de geometría analítica", "Coordenadas, distancia entre puntos y pendiente de rectas.",
-         t3_inicio + timedelta(days=25), 25, 3),
-        (curso_mate.id, 0, "Prueba final ecuaciones", "Evaluación final con ecuaciones lineales, cuadráticas y sistemas 2x2.",
-         t3_inicio + timedelta(days=32), 25, 3),
-        (curso_fisica.id, 2, "Problemas de trabajo y energía", "Resuelve 6 problemas de conservación de energía.",
-         t2_inicio + timedelta(days=3), 20, 2),
-        (curso_lenguaje.id, 2, "Ensayo: literatura boliviana", "Investiga y escribe sobre un autor boliviano.",
-         t2_inicio + timedelta(days=7), 25, 2),
-        (curso_bio.id, 2, "Mapa de ecosistemas", "Dibuja y describe 3 ecosistemas de Bolivia.",
-         t2_inicio + timedelta(days=4), 20, 2),
+         t1_inicio + timedelta(days=55), 10, 1),
         (curso_ingles.id, 2, "Conversation video", "Record a 2-minute conversation introducing yourself.",
-         t2_inicio + timedelta(days=6), 20, 2),
+         t2_inicio + timedelta(days=56), 20, 2),
     ]
 
     def fecha_pub(fecha_limite, offset_semilla):
@@ -332,7 +449,7 @@ with app.app_context():
         return fecha_limite - timedelta(days=dias_antes)
 
     tareas_creadas = []
-    for i, (curso_id, mod_idx, titulo, instr, f_lim, puntaje, _trim) in enumerate(tareas_data):
+    for i, (curso_id, mod_idx, titulo, instr, f_lim, puntaje, _trimestre) in enumerate(tareas_data):
         t = Tarea(
             modulo_id=modulos[curso_id][mod_idx].id,
             titulo=titulo,
@@ -340,13 +457,17 @@ with app.app_context():
             fecha_publicacion=fecha_pub(f_lim, i * 7 + sum(ord(c) for c in titulo)),
             fecha_limite=f_lim,
             puntaje_maximo=puntaje,
-
-
         )
         db.session.add(t)
         tareas_creadas.append(t)
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # ENTREGAS Y CALIFICACIONES
+    # Solo se generan entregas/calificaciones para tareas cuya fecha
+    # límite ya pasó respecto a "hoy" (27/06/2026); las tareas futuras
+    # (trimestre 2 avanzado) quedan pendientes, como en un curso real.
+    # -----------------------------------------------------------------
     print("Creando entregas y calificaciones...")
 
     def generar_nota(seed, puntaje_max):
@@ -386,9 +507,17 @@ with app.app_context():
     retro_idx = 0
 
     entrega_count = 0
+    pendientes_count = 0
     for tarea in tareas_creadas:
         curso_id = tarea.modulo.curso_id
         indices = curso_estudiantes.get(curso_id, [])
+
+        # Si la fecha límite todavía no llegó (respecto a "hoy"), la tarea
+        # queda pendiente: no se generan entregas ni calificaciones.
+        if tarea.fecha_limite > FECHA_HOY:
+            pendientes_count += 1
+            continue
+
         for est_idx in indices:
             est = estudiantes[est_idx]
             nota = generar_nota(est_idx * 7 + tarea.id, tarea.puntaje_maximo)
@@ -431,29 +560,37 @@ with app.app_context():
 
     db.session.commit()
     print(f"  {entrega_count} entregas calificadas creadas.")
+    print(f"  {pendientes_count} tareas quedan pendientes (fecha límite futura).")
 
+    # -----------------------------------------------------------------
+    # ANUNCIOS — contexto boliviano
+    # -----------------------------------------------------------------
     print("Creando anuncios...")
     anuncios_data = [
-        (curso_mate.id, "¡Bienvenidos a Matemáticas 4to!",
-         "Bienvenidos al curso de Matemáticas. Este trimestre veremos ecuaciones lineales y funciones cuadráticas."),
+        (curso_mate.id, "¡Bienvenidos a Matemática 4to de Secundaria!",
+         "Bienvenidos al curso de Matemática. Esta gestión veremos ecuaciones lineales, funciones cuadráticas y geometría plana."),
         (curso_mate.id, "Recordatorio: Prueba de ecuaciones",
-         "La prueba escrita de ecuaciones lineales será el viernes. Estudien los ejercicios de la guía."),
-        (curso_fisica.id, "Inicio de clases - Física 5to",
-         "Bienvenidos al curso de Física. Empezaremos con cinemática."),
+         "La prueba escrita de ecuaciones lineales será el viernes. Estudien los ejercicios de la guía y repasen en Khan Academy."),
+        (curso_fisica.id, "Inicio de clases - Física 5to de Secundaria",
+         "Bienvenidos al curso de Física correspondiente a la gestión 2026. Empezaremos con cinemática: MRU y MRUV."),
         (curso_fisica.id, "Resultados laboratorio virtual",
-         "Las notas del laboratorio de caída libre ya están disponibles en el sistema."),
-        (curso_lenguaje.id, "Bienvenida - Lenguaje 3ro",
-         "Este trimestre trabajaremos ortografía y redacción."),
-        (curso_lenguaje.id, "Concurso de ortografía",
-         "El viernes 15 tendremos el concurso inter-aulas de ortografía. ¡Prepárense!"),
-        (curso_bio.id, "Inicio de Biología 4to",
+         "Las notas del laboratorio de caída libre ya están disponibles en el sistema. Revisen la retroalimentación."),
+        (curso_comunicacion.id, "Bienvenida - Comunicación y Lenguajes",
+         "Esta gestión trabajaremos ortografía, redacción y literatura boliviana en el marco del currículo del Ministerio de Educación."),
+        (curso_comunicacion.id, "Concurso de ortografía de la unidad educativa",
+         "El viernes 15 tendremos el concurso inter-aulas de ortografía. ¡Prepárense repasando las reglas de tildación!"),
+        (curso_sociales.id, "Bienvenida - Ciencias Sociales 4to",
+         "Iniciamos el estudio de la historia de Bolivia, desde la Colonia hasta la fundación del Estado Plurinacional en 1825."),
+        (curso_sociales.id, "Salida pedagógica - Museo Nacional de Etnografía y Folklore",
+         "Coordinaremos una visita al museo en La Paz como complemento de la unidad sobre la época colonial."),
+        (curso_bio.id, "Inicio de Biología-Geografía 4to",
          "Comenzamos con biología celular. La maqueta de la célula se entrega en 2 semanas."),
         (curso_bio.id, "Material para genética",
-         "Traer cuadros de Punnett impresos para la próxima clase de genética."),
-        (curso_ingles.id, "Welcome to English 3rd Grade",
-         "This trimester we will study basic grammar and vocabulary."),
+         "Traer cuadros de Punnett impresos para la próxima clase de genética mendeliana."),
+        (curso_ingles.id, "Welcome to English - 3rd of Secondary",
+         "This school year (gestión 2026) we will study basic grammar and vocabulary following the national curriculum."),
         (curso_ingles.id, "Conversation video deadline",
-         "Record your conversation video and submit it before the deadline."),
+         "Record your conversation video and submit it before the deadline. Practice with the unProfesor English resources."),
     ]
     anuncio_count = 0
     for curso_id, titulo, contenido in anuncios_data:
@@ -461,18 +598,23 @@ with app.app_context():
         anuncio_count += 1
     db.session.commit()
 
+    # -----------------------------------------------------------------
+    # RESUMEN FINAL
+    # -----------------------------------------------------------------
     print("\n¡Datos de prueba creados exitosamente!")
-    print("=" * 55)
+    print("=" * 60)
     print("Credenciales de acceso:")
-    print(f"  Admin:               admin@colegio.bo / admin123")
-    print(f"  Prof. Rosa Quispe:   rosa.quispe@colegio.bo / docente123")
-    print(f"  Prof. Marcelo Choque: marcelo.choque@colegio.bo / docente123")
-    print(f"  Prof. Juana Pérez:   juana.perez@colegio.bo / docente123")
+    print(f"  Admin:                 admin@colegio.bo / admin123")
+    print(f"  Prof. Rosa Quispe:     rosa.quispe@colegio.bo / docente123")
+    print(f"  Prof. Marcelo Choque:  marcelo.choque@colegio.bo / docente123")
+    print(f"  Prof. Juana Pérez:     juana.perez@colegio.bo / docente123")
+    print(f"  Prof. Franklin Yujra:  franklin.yujra@colegio.bo / docente123")
     print(f"  Todos los estudiantes: XXXXXX@colegio.bo / estudiante123")
-    print("=" * 55)
+    print("=" * 60)
     print(f"  {len(estudiantes)} estudiantes · {len(cursos)} cursos")
-    print(f"  {len(tareas_creadas)} tareas")
+    print(f"  {sum(len(v) for v in modulos.values())} módulos")
+    print(f"  {len(recursos_lista)} recursos (URLs raíz verificadas)")
+    print(f"  {len(tareas_creadas)} tareas ({pendientes_count} pendientes, {len(tareas_creadas) - pendientes_count} ya calificadas)")
     print(f"  {entrega_count} entregas calificadas")
     print(f"  {anuncio_count} anuncios")
-    print("=" * 55)
-
+    print("=" * 60)
