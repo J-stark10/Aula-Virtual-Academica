@@ -45,5 +45,6 @@ def eliminar(id):
     item = Anuncio.query.get(id)
     db.session.delete(item)
     db.session.commit()
+    registrar_log("Eliminar Anuncio", f"Anuncio '{item.titulo}' eliminado")
     flash("Anuncio eliminado exitosamente.", "success")
     return redirect(url_for("curso.detalle", id=item.curso_id))

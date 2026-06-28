@@ -75,5 +75,6 @@ def eliminar(id):
     item = Categoria.query.get(id)
     db.session.delete(item)
     db.session.commit()
+    registrar_log("Eliminar Categoría", f"Categoría '{item.nombre}' eliminada")
     flash("Categoría eliminada exitosamente.", "success")
     return redirect(url_for("categoria.listar"))

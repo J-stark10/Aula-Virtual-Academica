@@ -90,6 +90,7 @@ def eliminar(id):
 
     db.session.delete(item)
     db.session.commit()
+    registrar_log("Eliminar Tarea", f"Tarea '{item.titulo}' eliminada")
     flash("Tarea eliminada exitosamente.", "success")
     return redirect(url_for("curso.detalle", id=curso_id))
 

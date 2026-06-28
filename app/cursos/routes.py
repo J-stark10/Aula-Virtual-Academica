@@ -108,6 +108,7 @@ def eliminar(id):
     item = Curso.query.get(id)
     db.session.delete(item)
     db.session.commit()
+    registrar_log("Eliminar Curso", f"Curso '{item.nombre}' eliminado")
     flash("Curso eliminado exitosamente.", "success")
     return redirect(url_for("curso.listar"))
 
@@ -184,4 +185,5 @@ def eliminar_inscripcion(id, inscripcion_id):
     inscripcion = Inscripcion.query.get(inscripcion_id)
     db.session.delete(inscripcion)
     db.session.commit()
+    registrar_log("Eliminar Inscripción", f"Inscripción de {inscripcion.estudiante.email} eliminada del curso ID {id}")
     return redirect(url_for("curso.inscripciones", id=id))

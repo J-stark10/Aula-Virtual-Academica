@@ -79,5 +79,6 @@ def eliminar(id):
     item = Modulo.query.get(id)
     db.session.delete(item)
     db.session.commit()
+    registrar_log("Eliminar Módulo", f"Módulo '{item.titulo}' eliminado del curso ID {item.curso_id}")
     flash("Módulo eliminado exitosamente.", "success")
     return redirect(url_for("curso.detalle", id=item.curso_id))

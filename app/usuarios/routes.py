@@ -103,5 +103,6 @@ def eliminar(id):
     usuario = Usuario.query.get(id)
     db.session.delete(usuario)
     db.session.commit()
+    registrar_log("Eliminar Usuario", f"Usuario {usuario.email} eliminado")
     flash("Usuario eliminado exitosamente.", "success")
     return redirect(url_for("usuario.listar"))
