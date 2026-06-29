@@ -1,6 +1,6 @@
 # Aula Virtual Académica
 
-Sistema de gestión de aprendizaje (LMS) para instituciones educativas de nivel secundario. Permite la administración de cursos, módulos, recursos, tareas, entregas, calificaciones por dimensiones y autoevaluaciones. Inspirado en Moodle, diseñado para el modelo pedagógico boliviano con evaluación por dimensiones (Ser, Saber, Hacer).
+Sistema de gestión de aprendizaje (LMS) para instituciones educativas de nivel secundario. Permite la administración de cursos, módulos, recursos, tareas, entregas, calificaciones y anuncios. Configurado con zona horaria Bolivia (UTC-4).
 
 ---
 
@@ -10,13 +10,12 @@ Sistema de gestión de aprendizaje (LMS) para instituciones educativas de nivel 
    - [Administrador](#administrador-admin)
    - [Docente](#docente-docente)
    - [Estudiante](#estudiante-estudiante)
-2. [Modelo de evaluación](#2-modelo-de-evaluación)
-3. [Descripción de módulos](#3-descripción-de-módulos)
-4. [Flujo de trabajo completo](#4-flujo-de-trabajo-completo)
-5. [Tecnologías](#5-tecnologías)
-6. [Instalación y ejecución](#6-instalación-y-ejecución)
-7. [Estructura del proyecto](#7-estructura-del-proyecto)
-8. [API de rutas](#8-api-de-rutas)
+2. [Descripción de módulos](#2-descripción-de-módulos)
+3. [Flujo de trabajo completo](#3-flujo-de-trabajo-completo)
+4. [Tecnologías](#4-tecnologías)
+5. [Instalación y ejecución](#5-instalación-y-ejecución)
+6. [Estructura del proyecto](#6-estructura-del-proyecto)
+7. [API de rutas](#7-api-de-rutas)
 
 ---
 
@@ -31,16 +30,11 @@ El administrador tiene acceso irrestricto a toda la plataforma. Puede ver y gest
 - Cerrar sesión
 - La sesión persiste hasta que cierra el navegador o expira
 
-#### Panel de administración (`/admin`)
-- **Dashboard con estadísticas globales:**
-  - Total de usuarios registrados (desglosado por rol: admin, docentes, estudiantes)
-  - Total de cursos activos
-  - Total de tareas publicadas
-  - Total de entregas recibidas
-  - Gráfico de barras con la distribución de usuarios por rol
-  - Gráfico de dona con actividades recientes por tipo
-  - Tabla de últimos 10 logs de actividad del sistema
-- **Logs de actividad:** Listado completo de todas las acciones realizadas en el sistema con fecha, usuario y detalle
+#### Dashboard
+- Redirige a la vista correspondiente según el rol del usuario
+- **Admin:** estadísticas globales (usuarios, docentes, estudiantes, cursos, inscripciones), gráfico de registros en los últimos 7 días
+- **Docente:** resumen de sus cursos, tareas próximas a vencer
+- **Estudiante:** lista de cursos inscritos, tareas pendientes y vencidas, anuncios recientes
 
 #### Gestión de cursos
 - Ver listado completo de todos los cursos
@@ -60,33 +54,25 @@ El administrador tiene acceso irrestricto a toda la plataforma. Puede ver y gest
 
 #### Gestión de tareas
 - Crear tareas en cualquier módulo de cualquier curso
-- Seleccionar dimensión de evaluación (Ser, Saber, Hacer)
 - Editar y eliminar tareas
-- Ver detalle de tareas
+- Ver detalle de tareas con fecha límite y estado de entrega
 
 #### Gestión de entregas
 - Ver listado de entregas de cualquier tarea
 - Descargar archivos entregados por los estudiantes
 - Calificar entregas (asignar nota numérica y retroalimentación)
-- Recalificar entregas (con historial de cambios)
 - Eliminar entregas
 
 #### Gestión de calificaciones
-- Ver notas globales de cualquier curso por trimestre
-- Ver resumen de puntos usados por dimensión
-- Ver detalle de notas por estudiante (desglose por tarea y dimensión)
-- Ver tendencia de calificaciones en el dashboard
+- Ver notas del curso (tabla con nota final de cada estudiante)
+- Ver detalle de notas por estudiante (desglose por tarea)
+- Estudiantes pueden consultar sus propias notas por curso
 
 #### Gestión de categorías
 - Crear, editar y eliminar categorías de cursos (Ciencias Exactas, Naturales, Humanidades, etc.)
 
 #### Gestión de anuncios
 - Crear y eliminar anuncios en cualquier curso
-
-#### Autoevaluaciones
-- Activar y desactivar autoevaluaciones por trimestre en cualquier curso
-- Ver resultados de autoevaluaciones
-- Calificar autoevaluaciones de los estudiantes
 
 ---
 
@@ -98,16 +84,16 @@ El docente solo puede gestionar sus propios cursos (aquellos donde fue asignado 
 - Iniciar sesión con email y contraseña
 - Cerrar sesión
 
-#### Dashboard docente (`/docente/dashboard`)
+#### Dashboard
 - Resumen de los cursos que dicta
+- Tareas próximas a vencer (próximos 7 días)
 - Enlaces rápidos a cada curso
-- Estadísticas básicas de sus cursos
 
 #### Gestión de cursos propios
 - **Crear curso:** formulario con nombre, descripción, categoría. Al crear se genera automáticamente un código único de 6 dígitos para que los estudiantes se inscriban.
 - **Editar curso:** modificar nombre, descripción, categoría y estado activo/inactivo
 - **Eliminar curso:** borra el curso con todo su contenido (módulos, recursos, tareas, entregas, calificaciones, anuncios)
-- **Ver detalle del curso:** visualiza módulos ordenados, recursos, tareas, anuncios y sección de autoevaluaciones
+- **Ver detalle del curso:** visualiza módulos ordenados, recursos, tareas y anuncios
 
 #### Código de inscripción
 - Cada curso tiene un código único de 6 dígitos
@@ -127,36 +113,20 @@ El docente solo puede gestionar sus propios cursos (aquellos donde fue asignado 
 - **Editar y eliminar recursos**
 
 #### Gestión de tareas
-- **Crear tarea:** formulario con:
-  - Título
-  - Instrucciones (descripción de lo que deben entregar)
-  - Trimestre (1, 2 o 3)
-  - Dimensión de evaluación (Ser, Saber, Hacer) — la autoevaluación se gestiona aparte
-  - Fecha límite (datetime-local)
-  - Puntaje máximo (mínimo 0.5, pasos de 0.5)
-- **Validación de puntos disponibles:** antes de crear, el sistema muestra una tarjeta con los puntos disponibles por dimensión para el trimestre seleccionado. Si se excede el límite, rechaza la creación.
-- **Editar tarea:** modificar cualquier campo, con validación de puntos disponibles si cambia dimensión/trimestre
+- **Crear tarea:** formulario con título, instrucciones, fecha límite (datetime-local) y puntaje máximo (mínimo 0.5, pasos de 0.5)
+- **Editar tarea:** modificar cualquier campo
 - **Eliminar tarea:** borra la tarea y todas sus entregas y calificaciones asociadas
-- **Ver detalle de tarea:** muestra título, instrucciones, fecha límite, dimensión, puntaje máximo, y el estado de la entrega del estudiante actual
+- **Ver detalle de tarea:** muestra título, instrucciones, fecha límite, puntaje máximo y estado de la entrega del estudiante actual
 
 #### Gestión de entregas
-- **Ver entregas:** listado de todos los estudiantes que entregaron la tarea, con fecha y archivo descargable
+- **Ver entregas:** listado de todos los estudiantes que entregaron la tarea, con fecha, archivo descargable y estado (a tiempo/tardía)
 - **Ver pendientes:** lista de estudiantes inscritos que aún no han entregado
 - **Calificar:** formulario donde asigna una nota numérica (0 - puntaje máximo) y retroalimentación opcional
-- **Recalificar:** si ya existe una calificación, al modificarla se guarda el historial de cambios (nota anterior, nota nueva, fecha, docente)
 - **Eliminar entrega:** borra la entrega y su calificación
 
 #### Calificaciones del curso
-- **Ver notas del curso:** tabla con todos los estudiantes y sus notas por dimensión (Ser, Saber, Hacer), más el total
-- **Selector de trimestre:** cambia entre trimestre 1, 2 y 3
-- **Resumen de puntos:** tarjeta visual con puntos usados y disponibles por dimensión
-- **Detalle por estudiante:** al hacer clic en un estudiante, muestra el desglose de todas sus tareas con notas por dimensión
-
-#### Autoevaluaciones
-- **Activar autoevaluación:** un botón por trimestre en el detalle del curso que activa la autoevaluación para todos los estudiantes
-- **Desactivar autoevaluación:** la cierra para que los estudiantes ya no puedan modificar sus respuestas
-- **Ver resultados:** tabla con todos los estudiantes, su auto-puntaje y la nota final
-- **Calificar autoevaluación:** puede aceptar el puntaje del estudiante o modificarlo, con retroalimentación opcional
+- **Ver notas del curso:** tabla con todos los estudiantes y su nota final
+- **Detalle por estudiante:** desglose de todas sus tareas con nota y retroalimentación
 
 #### Anuncios
 - **Crear anuncio:** título y contenido, se publica inmediatamente en el curso
@@ -172,10 +142,11 @@ El docente solo puede gestionar sus propios cursos (aquellos donde fue asignado 
 - Cerrar sesión
 - La sesión persiste hasta que cierra el navegador
 
-#### Dashboard estudiante (`/`)
+#### Dashboard
 - Listado de cursos en los que está inscrito
+- Tareas pendientes y vencidas
+- Anuncios recientes
 - Enlaces rápidos a cada curso
-- Acceso a "Mis Notas" global
 
 #### Inscripción a cursos
 - **Unirse a un curso:** formulario donde ingresa el código de 6 dígitos proporcionado por el docente
@@ -186,131 +157,75 @@ El docente solo puede gestionar sus propios cursos (aquellos donde fue asignado 
 - **Encabezado:** nombre del curso, categoría, docente, descripción
 - **Anuncios:** comunicados del docente
 - **Módulos:** contenido organizado por unidades, cada una con:
-  - **Recursos:** enlaces a materiales (abre en nueva pestaña), PDFs descargables, videos
+  - **Recursos:** enlaces a materiales, PDFs descargables, videos
   - **Tareas:** enlaces a cada tarea con su fecha límite
-- **Autoevaluación:** sección por trimestre que muestra si está activa, su puntaje si ya respondió, y enlace para realizar/actualizar
 
 #### Tareas
-- **Ver detalle de tarea:** instrucciones, fecha límite, dimensión, puntaje máximo
-- **Entregar tarea:** formulario con:
-  - Subida de archivo (obligatorio en primera entrega)
-  - Comentario opcional para el docente
-- **Reenviar:** si ya entregó, puede subir un nuevo archivo que reemplaza al anterior
+- **Ver detalle de tarea:** instrucciones, fecha límite, puntaje máximo
+- **Entregar tarea:** formulario con subida de archivo (obligatorio en primera entrega) y comentario opcional
+- **Reenviar:** si ya entregó, puede subir un nuevo archivo que reemplaza al anterior (se actualiza la fecha de entrega)
 - Si la tarea está vencida, igual puede entregar (el sistema no bloquea por fecha)
 
 #### Calificaciones
-- **Mis Notas (global):** resumen de todos sus cursos con notas por trimestre y nota final
-- **Mis Notas (por curso):** vista detallada con:
-  - Nota final del curso
-  - Desglose por trimestre con notas por dimensión (Ser, Saber, Hacer)
-  - Lista de todas las tareas con su nota individual y retroalimentación del docente
-  - Autoevaluación con auto-puntaje y nota final del docente
+- **Mis Notas (por curso):** vista detallada con nota final del curso y lista de todas las tareas con su nota individual y retroalimentación del docente
 
-#### Autoevaluación
-- Cuando el docente la activa, aparece en el detalle del curso
-- **Formulario simple:** ingresa un número del 0 al 5 (pasos de 0.5) evaluando su propio desempeño
-- Puede actualizar su respuesta mientras la autoevaluación esté activa
-- Una vez que el docente la desactiva o califica, ya no puede modificarla
-- Ve su nota final y retroalimentación si el docente ya la calificó
+
 
 ---
 
-## 2. Modelo de evaluación
-
-El sistema implementa el modelo de evaluación por dimensiones utilizado en el sistema educativo boliviano:
-
-| Dimensión | Pts máx | Descripción |
-|-----------|---------|-------------|
-| **Ser** | 10 | Actitud, valores, participación, responsabilidad, respeto |
-| **Saber** | 45 | Conocimiento teórico, evaluaciones escritas, cuestionarios |
-| **Hacer** | 40 | Práctica, ejercicios, laboratorios, trabajos prácticos |
-| **Total base** | **95** | Suma de las 3 dimensiones |
-| Autoevaluación | 5 | Reflexión del propio estudiante (se gestiona aparte) |
-
-- Cada tarea se asigna a una dimensión (Ser, Saber o Hacer)
-- El docente define el puntaje de cada tarea respetando los límites por dimensión
-- El sistema valida que no se excedan los puntos máximos por dimensión en cada trimestre
-- La autoevaluación es independiente: el docente la activa, el estudiante se autoevalúa (0-5), el docente puede ajustar la nota final
-
----
-
-## 3. Descripción de módulos
+## 2. Descripción de módulos
 
 ### Autenticación (`/auth`)
 - `GET /auth/login` — formulario de inicio de sesión
 - `POST /auth/login` — validación de credenciales
 - `GET /auth/logout` — cierre de sesión
 
-### Núcleo / Dashboard (`/`)
-- `GET /` — redirige según rol: admin → `/admin`, docente → `/docente/dashboard`, estudiante → lista de cursos
-- `GET /admin` — dashboard con estadísticas y logs
-- `GET /docente/dashboard` — resumen de cursos del docente
+### Dashboard (`/`)
+- `GET /` — redirige según el rol del usuario
 
 ### Cursos (`/cursos`)
 - `GET /cursos/` — listado de cursos visibles según rol
-- `GET /cursos/create` — formulario de creación
-- `POST /cursos/create` — guardar nuevo curso
-- `GET /cursos/detalle/<id>` — vista completa del curso
-- `GET /cursos/edit/<id>` — formulario de edición
-- `POST /cursos/edit/<id>` — guardar cambios
+- `GET|POST /cursos/create` — crear curso
+- `GET|POST /cursos/edit/<id>` — editar curso
 - `GET /cursos/delete/<id>` — eliminar curso
-- `GET /cursos/unirse` — formulario para estudiantes (inscripción por código)
-- `POST /cursos/unirse` — procesar inscripción
+- `GET /cursos/detalle/<id>` — vista completa del curso
+- `GET|POST /cursos/unirse` — inscripción por código (estudiantes)
 - `GET /cursos/inscripciones/<id>` — gestionar inscripciones
 
 ### Módulos (`/modulos`)
-- `GET /modulos/create` — crear módulo
-- `POST /modulos/create` — guardar módulo
-- `GET /modulos/edit/<id>` — editar módulo
-- `POST /modulos/edit/<id>` — guardar cambios
+- `GET|POST /modulos/curso/<id>/create` — crear módulo
+- `GET|POST /modulos/edit/<id>` — editar módulo
 - `GET /modulos/delete/<id>` — eliminar módulo
 
 ### Recursos (`/recursos`)
-- `GET /recursos/modulo/<id>/create` — crear recurso
-- `POST /recursos/modulo/<id>/create` — guardar recurso
-- `GET /recursos/edit/<id>` — editar recurso
-- `POST /recursos/edit/<id>` — guardar cambios
+- `GET|POST /recursos/modulo/<id>/create` — crear recurso (enlace, PDF, video)
+- `GET|POST /recursos/edit/<id>` — editar recurso
 - `GET /recursos/delete/<id>` — eliminar recurso
 - `GET /recursos/descargar/<path>` — descargar archivo
 
 ### Tareas (`/tareas`)
-- `GET /tareas/modulo/<id>/create` — formulario de creación (con puntos disponibles)
-- `POST /tareas/modulo/<id>/create` — guardar tarea
-- `GET /tareas/detalle/<id>` — vista de tarea (entrega/calificación)
-- `GET /tareas/edit/<id>` — editar tarea
-- `POST /tareas/edit/<id>` — guardar cambios
+- `GET|POST /tareas/modulo/<id>/create` — crear tarea
+- `GET /tareas/detalle/<id>` — vista de tarea con entrega y calificación
+- `GET|POST /tareas/edit/<id>` — editar tarea
 - `GET /tareas/delete/<id>` — eliminar tarea
 
 ### Entregas (`/entregas`)
-- `GET /entregas/tarea/<id>/enviar` — formulario de entrega (solo estudiantes)
-- `POST /entregas/tarea/<id>/enviar` — procesar entrega
-- `GET /entregas/tarea/<id>/listar` — listado de entregas (solo docentes)
+- `GET|POST /entregas/tarea/<id>/enviar` — entregar tarea (estudiantes)
+- `GET /entregas/tarea/<id>/listar` — listado de entregas (docentes)
 - `GET /entregas/delete/<id>` — eliminar entrega
 - `GET /entregas/descargar/<path>` — descargar archivo de entrega
 
 ### Calificaciones (`/calificaciones`)
-- `GET /calificaciones/entrega/<id>/calificar` — formulario de calificación
-- `POST /calificaciones/entrega/<id>/calificar` — guardar nota
-- `GET /calificaciones/curso/<id>/notas` — tabla de notas del curso
+- `GET|POST /calificaciones/entrega/<id>/calificar` — calificar entrega
+- `GET /calificaciones/curso/<id>/notas` — notas del curso
 - `GET /calificaciones/curso/<id>/estudiante/<id>` — detalle por estudiante
-- `GET /calificaciones/mis-notas` — notas del estudiante (todos los cursos)
-- `GET /calificaciones/curso/<id>/mis-notas` — notas por curso (estudiante)
-
-### Autoevaluación
-- `POST /cursos/<id>/autoevaluacion/activar` — docente activa
-- `POST /cursos/<id>/autoevaluacion/desactivar` — docente desactiva
-- `GET|POST /cursos/<id>/autoevaluacion/<trimestre>` — estudiante llena formulario
-- `GET /cursos/<id>/autoevaluaciones/<trimestre>` — docente ve resultados
-- `GET|POST /cursos/autoevaluacion/calificar/<id>` — docente califica
+- `GET /calificaciones/curso/<id>/mis-notas` — mis notas (estudiante)
 
 ### Anuncios (`/anuncios`)
-- `GET /anuncios/curso/<id>/create` — crear anuncio
-- `POST /anuncios/curso/<id>/create` — guardar
-- `GET /anuncios/delete/<id>` — eliminar
+- `GET|POST /anuncios/curso/<id>/create` — crear anuncio
+- `GET /anuncios/delete/<id>` — eliminar anuncio
 
----
-
-## 4. Flujo de trabajo completo
+## 3. Flujo de trabajo completo
 
 ### Ciclo de vida de un curso
 
@@ -323,51 +238,32 @@ El sistema implementa el modelo de evaluación por dimensiones utilizado en el s
 7. **Docente** crea tareas en los módulos con fecha límite y puntaje
 8. **Estudiantes** entregan las tareas (suben archivos)
 9. **Docente** califica las entregas (asigna nota y retroalimentación)
-10. **Docente** activa la autoevaluación del trimestre
-11. **Estudiantes** llenan su autoevaluación (0-5)
-12. **Docente** revisa y califica las autoevaluaciones
-13. **Docente** consulta las notas del curso por trimestre
-14. **Estudiantes** consultan sus notas y retroalimentación
-
-### Ejemplo de distribución de puntos (Trimestre 1)
-
-**Matemáticas - 4to "A"**
-| Tarea | Dimensión | Pts |
-|-------|-----------|-----|
-| Ejercicios de ecuaciones lineales | Saber | 20 |
-| Prueba escrita — Ecuaciones | Saber | 25 |
-| Gráfica de funciones cuadráticas | Hacer | 20 |
-| Cuestionario de funciones | Hacer | 15 |
-| Participación y puntualidad | Ser | 5 |
-| Responsabilidad académica | Ser | 5 |
-| Práctica de geometría básica | Hacer | 5 |
-| Autoevaluación | (separada) | 5 |
-
-Total por dimensión: Ser=10, Saber=45, Hacer=40, Autoevaluación=5
+10. **Docente** consulta las notas del curso
+11. **Estudiantes** consultan sus notas y retroalimentación
 
 ---
 
-## 5. Tecnologías
+## 4. Tecnologías
 
 | Capa | Tecnología | Versión |
 |------|-----------|---------|
 | Lenguaje | Python | 3.12 |
 | Framework web | Flask | 3.1.3 |
 | ORM | SQLAlchemy | 2.0.50 |
-| Migraciones | Flask-Migrate / Alembic | 1.18.4 |
+| Migraciones | Flask-Migrate / Alembic | — |
 | Base de datos | SQLite (desarrollo) / PostgreSQL (producción) | — |
 | Autenticación | Flask-Login + Flask-Bcrypt | — |
-| Formularios | Flask-WTF / WTForms (instalado, no implementado) | — |
 | Template engine | Jinja2 | 3.1.6 |
 | CSS | Tailwind CSS (vía CDN) | — |
 | Gráficos | Chart.js (vía CDN) | — |
 | Servidor WSGI | Gunicorn | 23.0.0 |
 | Conector PostgreSQL | psycopg2-binary | 2.9.10 |
 | Variables de entorno | python-dotenv | 1.0.1 |
+| Zona horaria | zoneinfo (tzdata) | — |
 
 ---
 
-## 6. Instalación y ejecución
+## 5. Instalación y ejecución
 
 ```bash
 # Clonar
@@ -381,6 +277,9 @@ venv\Scripts\activate  # Windows
 
 # Instalar dependencias
 pip install -r requirements.txt
+
+# Configurar variables de entorno (opcional)
+cp .env.example .env  # si existe, o crear .env con DATABASE_URL
 
 # Cargar datos de prueba
 python seed.py
@@ -401,64 +300,86 @@ Abrir `http://127.0.0.1:5000` en el navegador.
 | Docente (Inglés) | juana.perez@colegio.bo | docente123 |
 | Estudiantes (25) | *@colegio.bo | estudiante123 |
 
+### Zona horaria
+
+Todas las fechas se almacenan en **UTC** en la base de datos y se muestran en **hora de Bolivia** (America/La_Paz, UTC-4) mediante el filtro `| bolivia` de Jinja2. Esto asegura que:
+
+- La hora mostrada a los usuarios siempre corresponde al huso horario boliviano
+- Las comparaciones internas (tareas vencidas, próximas a vencer) se hacen en UTC, evitando errores por cambios de zona
+- El seed genera datos en hora Bolivia y los convierte a UTC automáticamente
+
+Para corregir registros existentes que se guardaron antes de esta implementación, ejecutar:
+
+```bash
+python fix_tareas_tz.py
+```
+
 ---
 
-## 7. Estructura del proyecto
+## 6. Estructura del proyecto
 
 ```
 AulaVirtualAcademica/
 ├── run.py                        # Punto de entrada del servidor
 ├── seed.py                       # Generación de datos de prueba
+├── fix_tareas_tz.py              # Script para corregir zonas horarias en datos existentes
 ├── requirements.txt              # Dependencias del proyecto
+├── Procfile                      # Despliegue en producción (Heroku/Render)
+├── .env                          # Variables de entorno
 ├── .gitignore
 ├── README.md
 ├── instance/
 │   └── aula_virtual.db           # Base de datos SQLite (desarrollo)
+├── migrations/                   # Migraciones de BD (Flask-Migrate / Alembic)
+│   ├── alembic.ini
+│   ├── env.py
+│   └── versions/
 └── app/
-    ├── __init__.py
-    ├── app.py                    # Fábrica de aplicación Flask
+    ├── app.py                    # Fábrica de aplicación Flask (BOLIVIA_TZ, UTC, filtro `bolivia`)
     ├── utils.py                  # Utilidades: decorador role_required, registrar_log, guardar_archivo
     ├── static/
-    │   ├── uploads/              # Archivos subidos (recursos, entregas)
-    │   └── ... (archivos estáticos)
+    │   └── uploads/              # Archivos subidos (entregas de estudiantes)
     ├── templates/
     │   ├── base.html             # Layout principal con Tailwind CSS
     │   └── ... (templates compartidos)
-    ├── auth/                     # Blueprint de autenticación
+    ├── auth/                     # Autenticación (login, logout)
     │   ├── routes.py
     │   └── templates/auth/
-    ├── core/                     # Blueprint del dashboard
+    ├── core/                     # Dashboard (admin, docente, estudiante)
     │   ├── routes.py
     │   └── templates/core/
-    ├── categoria/                # Blueprint de categorías
+    ├── categorias/               # Categorías de cursos
     │   ├── models.py
     │   └── routes.py
-    ├── cursos/                   # Blueprint de cursos
+    ├── usuarios/                 # Gestión de usuarios
+    │   ├── models.py             # Usuario, LogActividad
+    │   ├── routes.py
+    │   └── templates/usuarios/
+    ├── cursos/                   # Cursos e inscripciones
     │   ├── models.py
     │   ├── routes.py
     │   └── templates/cursos/
-    ├── modulos/                  # Blueprint de módulos
+    ├── modulos/                  # Módulos dentro de cursos
     │   ├── models.py
     │   ├── routes.py
     │   └── templates/modulos/
-    ├── recursos/                 # Blueprint de recursos
+    ├── recursos/                 # Recursos (enlaces, archivos)
     │   ├── models.py
     │   ├── routes.py
     │   └── templates/recursos/
-    ├── tareas/                   # Blueprint de tareas
+    ├── tareas/                   # Tareas con fecha límite
     │   ├── models.py
     │   ├── routes.py
     │   └── templates/tareas/
-    ├── entregas/                 # Blueprint de entregas
+    ├── entregas/                 # Entregas de estudiantes
     │   ├── models.py
     │   ├── routes.py
     │   └── templates/entregas/
-    ├── calificaciones/           # Blueprint de calificaciones
+    ├── calificaciones/           # Calificaciones y notas
     │   ├── models.py
-    │   ├── helpers.py            # Funciones de cálculo de notas
     │   ├── routes.py
     │   └── templates/calificaciones/
-    └── anuncios/                 # Blueprint de anuncios
+    └── anuncios/                 # Anuncios por curso
         ├── models.py
         ├── routes.py
         └── templates/anuncios/
@@ -466,95 +387,72 @@ AulaVirtualAcademica/
 
 ---
 
-## 8. API de rutas
+## 7. API de rutas
 
 ### Autenticación
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/auth/login` | Público | Formulario de login |
-| POST | `/auth/login` | Público | Iniciar sesión |
-| GET | `/auth/logout` | Todos | Cerrar sesión |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/auth/login` | Público |
+| GET | `/auth/logout` | Todos |
 
 ### Dashboard
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/` | Todos | Redirección según rol |
-| GET | `/admin` | Admin | Dashboard con estadísticas y logs |
-| GET | `/docente/dashboard` | Docente | Resumen de cursos |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET | `/` | Todos |
+| GET | `/bitacora` | Todos |
 
 ### Cursos
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/cursos/` | Todos | Listar cursos |
-| GET | `/cursos/create` | Admin/Docente | Formulario creación |
-| POST | `/cursos/create` | Admin/Docente | Guardar curso |
-| GET | `/cursos/detalle/<id>` | Todos | Ver curso |
-| GET | `/cursos/edit/<id>` | Admin/Docente | Editar |
-| POST | `/cursos/edit/<id>` | Admin/Docente | Guardar cambios |
-| GET | `/cursos/delete/<id>` | Admin/Docente | Eliminar |
-| GET | `/cursos/unirse` | Estudiante | Formulario inscripción |
-| POST | `/cursos/unirse` | Estudiante | Procesar inscripción |
-| GET | `/cursos/inscripciones/<id>` | Admin/Docente | Gestionar inscripciones |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET | `/cursos/` | Todos |
+| GET, POST | `/cursos/create` | Admin/Docente |
+| GET, POST | `/cursos/edit/<id>` | Admin/Docente |
+| GET | `/cursos/delete/<id>` | Admin/Docente |
+| GET | `/cursos/detalle/<id>` | Todos |
+| GET, POST | `/cursos/unirse` | Estudiante |
+| GET | `/cursos/inscripciones/<id>` | Admin/Docente |
 
 ### Módulos
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/modulos/create` | Admin/Docente | Crear módulo |
-| POST | `/modulos/create` | Admin/Docente | Guardar |
-| GET | `/modulos/edit/<id>` | Admin/Docente | Editar |
-| POST | `/modulos/edit/<id>` | Admin/Docente | Guardar cambios |
-| GET | `/modulos/delete/<id>` | Admin/Docente | Eliminar |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/modulos/curso/<id>/create` | Admin/Docente |
+| GET, POST | `/modulos/edit/<id>` | Admin/Docente |
+| GET | `/modulos/delete/<id>` | Admin/Docente |
 
 ### Recursos
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/recursos/modulo/<id>/create` | Admin/Docente | Crear |
-| POST | `/recursos/modulo/<id>/create` | Admin/Docente | Guardar |
-| GET | `/recursos/edit/<id>` | Admin/Docente | Editar |
-| POST | `/recursos/edit/<id>` | Admin/Docente | Guardar cambios |
-| GET | `/recursos/delete/<id>` | Admin/Docente | Eliminar |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/recursos/modulo/<id>/create` | Admin/Docente |
+| GET, POST | `/recursos/edit/<id>` | Admin/Docente |
+| GET | `/recursos/delete/<id>` | Admin/Docente |
+| GET | `/recursos/descargar/<path>` | Todos |
 
 ### Tareas
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/tareas/modulo/<id>/create` | Admin/Docente | Crear |
-| POST | `/tareas/modulo/<id>/create` | Admin/Docente | Guardar |
-| GET | `/tareas/detalle/<id>` | Todos | Ver tarea |
-| GET | `/tareas/edit/<id>` | Admin/Docente | Editar |
-| POST | `/tareas/edit/<id>` | Admin/Docente | Guardar cambios |
-| GET | `/tareas/delete/<id>` | Admin/Docente | Eliminar |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/tareas/modulo/<id>/create` | Admin/Docente |
+| GET | `/tareas/detalle/<id>` | Todos |
+| GET, POST | `/tareas/edit/<id>` | Admin/Docente |
+| GET | `/tareas/delete/<id>` | Admin/Docente |
 
 ### Entregas
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/entregas/tarea/<id>/enviar` | Estudiante | Formulario |
-| POST | `/entregas/tarea/<id>/enviar` | Estudiante | Entregar |
-| GET | `/entregas/tarea/<id>/listar` | Admin/Docente | Listar entregas |
-| GET | `/entregas/delete/<id>` | Admin/Docente | Eliminar |
-| GET | `/entregas/descargar/<path>` | Admin/Docente | Descargar archivo |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/entregas/tarea/<id>/enviar` | Estudiante |
+| GET | `/entregas/tarea/<id>/listar` | Admin/Docente |
+| GET | `/entregas/delete/<id>` | Admin/Docente |
+| GET | `/entregas/descargar/<path>` | Admin/Docente |
 
 ### Calificaciones
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/calificaciones/entrega/<id>/calificar` | Admin/Docente | Formulario |
-| POST | `/calificaciones/entrega/<id>/calificar` | Admin/Docente | Guardar |
-| GET | `/calificaciones/curso/<id>/notas` | Admin/Docente | Notas del curso |
-| GET | `/calificaciones/curso/<id>/estudiante/<id>` | Admin/Docente | Detalle estudiante |
-| GET | `/calificaciones/mis-notas` | Estudiante | Mis notas global |
-| GET | `/calificaciones/curso/<id>/mis-notas` | Estudiante | Mis notas por curso |
-
-### Autoevaluaciones
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| POST | `/cursos/<id>/autoevaluacion/activar` | Admin/Docente | Activar |
-| POST | `/cursos/<id>/autoevaluacion/desactivar` | Admin/Docente | Desactivar |
-| GET/POST | `/cursos/<id>/autoevaluacion/<t>` | Estudiante | Formulario |
-| GET | `/cursos/<id>/autoevaluaciones/<t>` | Admin/Docente | Ver resultados |
-| GET/POST | `/cursos/autoevaluacion/calificar/<id>` | Admin/Docente | Calificar |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/calificaciones/entrega/<id>/calificar` | Admin/Docente |
+| GET | `/calificaciones/curso/<id>/notas` | Admin/Docente |
+| GET | `/calificaciones/curso/<id>/estudiante/<id>` | Admin/Docente |
+| GET | `/calificaciones/curso/<id>/mis-notas` | Estudiante |
 
 ### Anuncios
-| Método | Ruta | Acceso | Descripción |
-|--------|------|--------|-------------|
-| GET | `/anuncios/curso/<id>/create` | Admin/Docente | Crear |
-| POST | `/anuncios/curso/<id>/create` | Admin/Docente | Guardar |
-| GET | `/anuncios/delete/<id>` | Admin/Docente | Eliminar |
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET, POST | `/anuncios/curso/<id>/create` | Admin/Docente |
+| GET | `/anuncios/delete/<id>` | Admin/Docente |
