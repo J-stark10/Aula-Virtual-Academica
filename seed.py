@@ -3,7 +3,7 @@ load_dotenv()
 
 import random
 from datetime import datetime, timedelta
-from app.app import create_app, db, bcrypt
+from app.app import create_app, db, bcrypt, BOLIVIA_TZ, UTC
 from app.usuarios.models import Usuario
 from app.categorias.models import Categoria
 from app.cursos.models import Curso, Inscripcion
@@ -26,9 +26,13 @@ def hash_pw(plain):
 # para que el gráfico de registros de los últimos 7 días del dashboard
 # admin tenga una distribución realista.
 # ---------------------------------------------------------------------------
-FECHA_INICIO_REGISTROS = datetime(2026, 6, 21, 8, 0, 0)
-FECHA_HOY = datetime(2026, 6, 27, 18, 0, 0)
-RANGO_DIAS_REGISTRO = (FECHA_HOY - FECHA_INICIO_REGISTROS).days
+# Las fechas aquí están en hora de Bolivia (UTC-4) y se convierten a UTC
+# para almacenarse en la BD. El filtro `bolivia` las muestra en hora local.
+FECHA_INICIO_REGISTROS_BO = datetime(2026, 6, 21, 8, 0, 0)
+FECHA_HOY_BO = datetime(2026, 6, 27, 18, 0, 0)
+FECHA_INICIO_REGISTROS = FECHA_INICIO_REGISTROS_BO.replace(tzinfo=BOLIVIA_TZ).astimezone(UTC).replace(tzinfo=None)
+FECHA_HOY = FECHA_HOY_BO.replace(tzinfo=BOLIVIA_TZ).astimezone(UTC).replace(tzinfo=None)
+RANGO_DIAS_REGISTRO = (FECHA_HOY_BO - FECHA_INICIO_REGISTROS_BO).days
 
 
 def fecha_registro_dispersa(seed):
@@ -36,12 +40,15 @@ def fecha_registro_dispersa(seed):
     Genera una fecha de registro determinística (basada en `seed`) dentro del
     rango 21-jun-2026 a hoy, para que todos los registros caigan en la
     ventana de los últimos 7 días que muestra el gráfico del dashboard.
+
+    La fecha devuelta se almacena en UTC (convertida desde hora Bolivia).
     """
     rnd = random.Random(seed)
     dia_offset = rnd.randint(0, RANGO_DIAS_REGISTRO)
     hora_offset = rnd.randint(7, 20)  # horario escolar/administrativo
     minuto_offset = rnd.randint(0, 59)
-    return FECHA_INICIO_REGISTROS + timedelta(days=dia_offset, hours=hora_offset - 8, minutes=minuto_offset)
+    bolivia_dt = FECHA_INICIO_REGISTROS_BO + timedelta(days=dia_offset, hours=hora_offset - 8, minutes=minuto_offset)
+    return bolivia_dt.replace(tzinfo=BOLIVIA_TZ).astimezone(UTC).replace(tzinfo=None)
 
 
 with app.app_context():
@@ -337,12 +344,16 @@ with app.app_context():
     # TAREAS — distribuidas en los 3 trimestres del año escolar
     # boliviano 2026 (febrero a noviembre aprox., aquí hasta junio
     # porque "hoy" en el sistema es 27/06/2026).
+    # Las fechas están en hora de Bolivia y se convierten a UTC.
     # -----------------------------------------------------------------
     print("Creando tareas...")
 
-    t1_inicio = datetime(2026, 2, 9)    # Trimestre 1: inicio de clases (febrero)
-    t2_inicio = datetime(2026, 5, 4)    # Trimestre 2
-    t3_inicio = datetime(2026, 9, 7)    # Trimestre 3 (a futuro respecto a "hoy")
+    t1_inicio_bo = datetime(2026, 2, 9, 8, 0, 0)   # Trimestre 1: inicio de clases (febrero)
+    t2_inicio_bo = datetime(2026, 5, 4, 8, 0, 0)   # Trimestre 2
+    t3_inicio_bo = datetime(2026, 9, 7, 8, 0, 0)    # Trimestre 3 (a futuro respecto a "hoy")
+    t1_inicio = t1_inicio_bo.replace(tzinfo=BOLIVIA_TZ).astimezone(UTC).replace(tzinfo=None)
+    t2_inicio = t2_inicio_bo.replace(tzinfo=BOLIVIA_TZ).astimezone(UTC).replace(tzinfo=None)
+    t3_inicio = t3_inicio_bo.replace(tzinfo=BOLIVIA_TZ).astimezone(UTC).replace(tzinfo=None)
 
     tareas_data = [
         # --- Matemática ---

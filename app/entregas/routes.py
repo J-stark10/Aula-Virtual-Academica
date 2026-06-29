@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 from app.app import db
@@ -41,6 +42,7 @@ def enviar(tarea_id):
                 entrega_existente.archivo = ruta_archivo
             entrega_existente.comentario = comentario
             entrega_existente.estado = "entregado"
+            entrega_existente.fecha_entrega = datetime.utcnow()
             db.session.commit()
             registrar_log(
                 "Reenviar Entrega", f"Entrega actualizada para tarea '{tarea.titulo}'"

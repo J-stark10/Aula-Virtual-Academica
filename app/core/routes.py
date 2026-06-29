@@ -1,8 +1,8 @@
+from collections import Counter
 from datetime import datetime, timedelta
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import func
-from app.app import db
+from app.app import db, BOLIVIA_TZ, UTC
 from app.usuarios.models import Usuario, LogActividad
 from app.cursos.models import Curso, Inscripcion
 from app.entregas.models import Entrega
@@ -30,19 +30,21 @@ def _dashboard_admin():
     total_cursos = Curso.query.count()
     total_inscripciones = Inscripcion.query.count()
 
-    hoy = datetime.utcnow().date()
+    hoy = datetime.utcnow().replace(tzinfo=UTC).astimezone(BOLIVIA_TZ).date()
+
+    rows = db.session.query(Usuario.fecha_registro).all()
+    fechas_bolivia = Counter()
+    for (fecha_registro,) in rows:
+        if fecha_registro:
+            d = fecha_registro.replace(tzinfo=UTC).astimezone(BOLIVIA_TZ).date()
+            fechas_bolivia[d] += 1
+
     labels = []
     data_registros = []
     for i in range(6, -1, -1):
         dia = hoy - timedelta(days=i)
         labels.append(dia.strftime("%d/%m"))
-        total_dia = (
-            db.session.query(func.count(Usuario.id))
-            .filter(func.date(Usuario.fecha_registro) == dia)
-            .scalar()
-            or 0
-        )
-        data_registros.append(total_dia)
+        data_registros.append(fechas_bolivia.get(dia, 0))
 
     recientes_logs = LogActividad.query.order_by(LogActividad.fecha.desc()).limit(8).all()
     ultimos_cursos = Curso.query.order_by(Curso.fecha_creacion.desc()).limit(5).all()
