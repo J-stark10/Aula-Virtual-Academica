@@ -1,10 +1,11 @@
 from datetime import datetime
-from flask import Blueprint, current_app, flash, redirect, render_template, request, send_from_directory, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.app import db
 from app.cursos.models import Inscripcion
 from app.tareas.models import Tarea
 from app.entregas.models import Entrega
+from app.supabase_client import supabase
 from app.utils import guardar_archivo, registrar_log, role_required
 
 bp_entrega = Blueprint("entrega", __name__, template_folder="templates")
@@ -98,6 +99,10 @@ def listar(tarea_id):
 @bp_entrega.route("/delete/<int:entrega_id>")
 def eliminar(entrega_id):
     entrega = Entrega.query.get(entrega_id)
+
+    if entrega.archivo:
+        supabase.storage.from_("uploads").remove([entrega.archivo])
+
     db.session.delete(entrega)
     db.session.commit()
     registrar_log("Eliminar Entrega", f"Entrega #{entrega.id} eliminada")
@@ -109,5 +114,6 @@ def eliminar(entrega_id):
 @login_required
 @role_required("admin", "docente")
 def descargar(ruta_relativa):
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], ruta_relativa)
+    url = supabase.storage.from_("uploads").get_public_url(ruta_relativa)
+    return redirect(url)
 

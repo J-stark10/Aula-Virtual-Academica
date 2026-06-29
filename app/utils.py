@@ -1,11 +1,14 @@
 import os
+import time
 from functools import wraps
-from flask import current_app, flash, redirect, url_for
+
+from flask import flash, redirect, url_for
 from flask_login import current_user
 from werkzeug.utils import secure_filename
-from app.app import db
-from app.usuarios.models import LogActividad
 
+from app.app import db
+from app.supabase_client import supabase
+from app.usuarios.models import LogActividad
 
 def role_required(*roles):
 
@@ -37,18 +40,22 @@ def registrar_log(accion, detalles=None):
 
 
 def guardar_archivo(file_storage, subcarpeta):
-
     if not file_storage or file_storage.filename == "":
         return None
 
     nombre_seguro = secure_filename(file_storage.filename)
-    nombre_final = f"{int(__import__('time').time())}_{nombre_seguro}"
+    nombre_final = f"{int(time.time())}_{nombre_seguro}"
 
-    carpeta_destino = os.path.join(current_app.config["UPLOAD_FOLDER"], subcarpeta)
-    os.makedirs(carpeta_destino, exist_ok=True)
+    ruta = f"{subcarpeta}/{nombre_final}"
 
-    ruta_absoluta = os.path.join(carpeta_destino, nombre_final)
-    file_storage.save(ruta_absoluta)
+    file_storage.stream.seek(0)
 
-    return f"{subcarpeta}/{nombre_final}"
+    supabase.storage.from_("uploads").upload(
+        path=ruta,
+        file=file_storage.stream.read(),
+        file_options={
+            "content-type": file_storage.content_type
+        }
+    )
 
+    return ruta

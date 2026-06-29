@@ -30,7 +30,6 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    app.config["UPLOAD_FOLDER"] = os.path.join( os.path.dirname(os.path.abspath(__file__)), "static", "uploads")
     app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024  # 64 MB máximo por archivo
 
     db.init_app(app)

@@ -1,8 +1,9 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app, send_from_directory
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.app import db
 from app.modulos.models import Modulo
 from app.recursos.models import Recurso
+from app.supabase_client import supabase
 from app.utils import guardar_archivo, registrar_log, role_required
 
 bp_recurso = Blueprint("recurso", __name__, template_folder="templates")
@@ -114,6 +115,11 @@ def eliminar(id):
 
     curso_id = item.modulo.curso_id
 
+    if item.archivo_pdf:
+        supabase.storage.from_("uploads").remove([item.archivo_pdf])
+    if item.archivo_video:
+        supabase.storage.from_("uploads").remove([item.archivo_video])
+
     db.session.delete(item)
     db.session.commit()
     registrar_log("Eliminar Recurso", f"Recurso '{item.titulo}' eliminado")
@@ -123,5 +129,6 @@ def eliminar(id):
 @bp_recurso.route("/descargar/<path:ruta_relativa>")
 @login_required
 def descargar(ruta_relativa):
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], ruta_relativa)
+    url = supabase.storage.from_("uploads").get_public_url(ruta_relativa)
+    return redirect(url)
 
